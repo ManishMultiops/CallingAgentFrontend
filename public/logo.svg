@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="180" height="40" viewBox="0 0 180 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="20" cy="20" r="18" fill="#1976d2" stroke="#1565c0" stroke-width="2"/>
+  
+  <!-- Phone icon -->
+  <path d="M12 8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2H12zm0 2h16v12H12V10z" fill="white" transform="translate(6, 6) scale(0.5)"/>
+  
+  <!-- Sound waves -->
+  <path d="M2 12h2v16H2z" fill="white" opacity="0.8"/>
+  <path d="M6 8h2v24H6z" fill="white" opacity="0.6"/>
+  <path d="M10 4h2v32H10z" fill="white" opacity="0.4"/>
+  
+  <!-- Text -->
+  <text x="50" y="16" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1976d2">Calling</text>
+  <text x="50" y="30" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1976d2">Agent</text>
+</svg>
