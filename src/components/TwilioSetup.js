@@ -16,7 +16,7 @@ import {
   Phone as PhoneIcon,
   Security as SecurityIcon
 } from '@mui/icons-material';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 
 function TwilioSetup() {
   const [settings, setSettings] = useState({
@@ -36,7 +36,7 @@ function TwilioSetup() {
 
   const fetchSettings = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/calls/bot-settings/');
+      const response = await apiClient.get('/calls/bot-settings/');
       setSettings({
         twilio_account_sid: response.data.twilio_account_sid || '',
         twilio_auth_token: response.data.twilio_auth_token || '',
@@ -79,7 +79,7 @@ function TwilioSetup() {
     }
     
     try {
-      await axios.post('http://localhost:8080/api/calls/bot-settings/', settings);
+      await apiClient.post('/calls/bot-settings/', settings);
       setSuccess('Twilio credentials saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);

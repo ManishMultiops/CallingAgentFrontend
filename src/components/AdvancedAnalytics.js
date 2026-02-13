@@ -35,7 +35,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 
 function AdvancedAnalytics() {
   const [loading, setLoading] = useState(true);
@@ -58,10 +58,10 @@ function AdvancedAnalytics() {
     
     try {
       const [sentimentRes, qualityRes, topicRes, conversionRes] = await Promise.all([
-        axios.get(`http://localhost:8080/api/calls/calls/sentiment_analytics/?days=${days}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/api/calls/calls/quality_metrics/?days=${days}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/api/calls/calls/topic_analytics/?days=${days}`).catch(() => ({ data: null })),
-        axios.get(`http://localhost:8080/api/calls/calls/conversion_predictions/?days=${days}`).catch(() => ({ data: null }))
+        apiClient.get(`/calls/calls/sentiment_analytics/?days=${days}`).catch(() => ({ data: null })),
+        apiClient.get(`/calls/calls/quality_metrics/?days=${days}`).catch(() => ({ data: null })),
+        apiClient.get(`/calls/calls/topic_analytics/?days=${days}`).catch(() => ({ data: null })),
+        apiClient.get(`/calls/calls/conversion_predictions/?days=${days}`).catch(() => ({ data: null }))
       ]);
 
       setSentimentData(sentimentRes.data);

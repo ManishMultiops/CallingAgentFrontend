@@ -24,7 +24,7 @@ import {
   Message as MessageIcon,
   Phone as PhoneIcon
 } from '@mui/icons-material';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 import TwilioSetup from './TwilioSetup';
 
 function Settings() {
@@ -34,7 +34,8 @@ function Settings() {
     greeting_message: "Hello! I'm calling from our company. How can I help you today?",
     greeting_english: "Hello! I'm calling from our company. How can I help you today?",
     greeting_hindi: "नमस्ते! मैं हमारी कंपनी की तरफ से कॉल कर रहा हूं। आज मैं आपकी कैसे मदद कर सकता हूं?",
-    greeting_chinese: "你好！我是从我们公司打来的电话。今天我能为您做些什么？"
+    greeting_chinese: "你好！我是从我们公司打来的电话。今天我能为您做些什么？",
+    greeting_french: "Bonjour! Je vous appelle de la part de notre entreprise. Comment puis-je vous aider aujourd'hui ?"
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -62,6 +63,7 @@ function Settings() {
     // Other languages
     { value: 'Polly.Zhiyu-Neural', label: 'Zhiyu (Neural) - Chinese Female' },
     { value: 'Polly.Kajal-Neural', label: 'Kajal (Neural) - Hindi Female' },
+    { value: 'Polly.Lea-Neural', label: 'Lea (Neural) - French Female' },
   ];
 
   useEffect(() => {
@@ -70,13 +72,14 @@ function Settings() {
 
   const fetchSettings = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/calls/bot-settings/');
+      const response = await apiClient.get('/calls/bot-settings/');
       setSettings({
         bot_voice: response.data.bot_voice,
         greeting_message: response.data.greeting_message,
         greeting_english: response.data.greeting_english,
         greeting_hindi: response.data.greeting_hindi,
-        greeting_chinese: response.data.greeting_chinese
+        greeting_chinese: response.data.greeting_chinese,
+        greeting_french: response.data.greeting_french
       });
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -90,14 +93,15 @@ function Settings() {
     setSaving(true);
     setError('');
     setSuccess('');
-    
+
     try {
-      await axios.post('http://localhost:8080/api/calls/bot-settings/', {
+      await apiClient.post('/calls/bot-settings/', {
         bot_voice: settings.bot_voice,
         greeting_message: settings.greeting_message,
         greeting_english: settings.greeting_english,
         greeting_hindi: settings.greeting_hindi,
-        greeting_chinese: settings.greeting_chinese
+        greeting_chinese: settings.greeting_chinese,
+        greeting_french: settings.greeting_french
       });
       setSuccess('Settings saved successfully!');
     } catch (error) {
@@ -112,21 +116,22 @@ function Settings() {
     if ('speechSynthesis' in window) {
       // Stop any current speech
       window.speechSynthesis.cancel();
-      
+
       // Create a new speech utterance
       const utterance = new SpeechSynthesisUtterance(settings.greeting_message);
-      
+
       // Map our voice choices to Web Speech API voices
       const voiceMap = {
-        'Polly.Zhiyu-Neural': 'Zhiyu'    // Chinese female voice (name hint)
+        'Polly.Zhiyu-Neural': 'Zhiyu',    // Chinese female voice (name hint)
+        'Polly.Lea-Neural': 'Lea'         // French female voice (name hint)
       };
-      
+
       // Get available voices (voices might not be loaded immediately)
       let voices = window.speechSynthesis.getVoices();
-      
+
       // Debug: Log all available voices
       console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
-      
+
       // If voices are not loaded yet, wait for them
       if (voices.length === 0) {
         window.speechSynthesis.onvoiceschanged = () => {
@@ -136,7 +141,7 @@ function Settings() {
         };
         return;
       }
-      
+
       setVoiceAndPlay(utterance, voices, voiceMap);
     } else {
       setError('Speech synthesis not supported in this browser');
@@ -145,20 +150,25 @@ function Settings() {
 
   const setVoiceAndPlay = (utterance, voices, voiceMap) => {
     const selectedVoiceName = voiceMap[settings.bot_voice];
-    
+
     // Set language based on voice selection
     if (settings.bot_voice === 'Polly.Zhiyu-Neural') {
       utterance.lang = 'zh-CN'; // Chinese language
+    } else if (settings.bot_voice === 'Polly.Lea-Neural') {
+      utterance.lang = 'fr-FR'; // French language
     } else {
       utterance.lang = 'en-US'; // English language
     }
-    
+
     // Find the matching voice
     const selectedVoice = voices.find(voice => {
       const name = voice.name.toLowerCase();
       const isEn = voice.lang.startsWith('en');
       if (settings.bot_voice === 'Polly.Zhiyu-Neural') {
         return voice.lang.startsWith('zh') || name.includes('chinese') || name.includes('mandarin') || name.includes('zhiyu');
+      }
+      if (settings.bot_voice === 'Polly.Lea-Neural') {
+        return voice.lang.startsWith('fr') || name.includes('french') || name.includes('lea') || name.includes('celine');
       }
       // English: try to match specific names, otherwise any English voice
       if (settings.bot_voice === 'Polly.Joanna-Neural') return isEn && (name.includes('joanna') || name.includes('female'));
@@ -168,14 +178,14 @@ function Settings() {
       // Google Wavenet: browser preview cannot use Twilio/Google names directly, approximate by gender hints
       if (settings.bot_voice.startsWith('Google.en-US-Wavenet-')) {
         const code = settings.bot_voice.slice(-1);
-        const maleCodes = ['A','B','D','I','J'];
-        const femaleCodes = ['C','E','F','G','H'];
+        const maleCodes = ['A', 'B', 'D', 'I', 'J'];
+        const femaleCodes = ['C', 'E', 'F', 'G', 'H'];
         if (maleCodes.includes(code)) return isEn && (name.includes('male') || name.includes('david') || name.includes('daniel'));
         if (femaleCodes.includes(code)) return isEn && (name.includes('female') || name.includes('samantha') || name.includes('victoria'));
       }
       return isEn;
     });
-    
+
     if (selectedVoice) {
       utterance.voice = selectedVoice;
       console.log(`Using voice: ${selectedVoice.name} (${selectedVoice.lang})`);
@@ -185,6 +195,8 @@ function Settings() {
       const fallbackVoice = voices.find(voice => {
         if (settings.bot_voice === 'Polly.Zhiyu-Neural') {
           return voice.lang.startsWith('zh');
+        } else if (settings.bot_voice === 'Polly.Lea-Neural') {
+          return voice.lang.startsWith('fr');
         } else {
           return voice.lang.startsWith('en');
         }
@@ -194,15 +206,15 @@ function Settings() {
         console.log(`Using fallback voice: ${fallbackVoice.name} (${fallbackVoice.lang})`);
       }
     }
-    
+
     // Set voice properties
     utterance.rate = 0.8;  // Slightly slower for better clarity (especially for Chinese)
     utterance.pitch = 1.0; // Normal pitch
     utterance.volume = 1.0; // Full volume
-    
+
     // Play the preview
     window.speechSynthesis.speak(utterance);
-    
+
     // Show success message
     setSuccess('Playing voice preview...');
     setTimeout(() => setSuccess(''), 2000);
@@ -243,14 +255,14 @@ function Settings() {
       {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={activeTab} onChange={handleTabChange}>
-          <Tab 
-            label="Bot Settings" 
-            icon={<MessageIcon />} 
+          <Tab
+            label="Bot Settings"
+            icon={<MessageIcon />}
             iconPosition="start"
           />
-          <Tab 
-            label="Twilio Setup" 
-            icon={<PhoneIcon />} 
+          <Tab
+            label="Twilio Setup"
+            icon={<PhoneIcon />}
             iconPosition="start"
           />
         </Tabs>
@@ -282,7 +294,7 @@ function Settings() {
                       Voice Settings
                     </Typography>
                   </Box>
-                  
+
                   <FormControl fullWidth sx={{ mb: 3 }}>
                     <InputLabel>Bot Voice</InputLabel>
                     <Select
@@ -299,7 +311,7 @@ function Settings() {
                   </FormControl>
 
                   <Typography variant="body2" color="textSecondary">
-                    Choose the voice that will be used for all bot conversations. 
+                    Choose the voice that will be used for all bot conversations.
                     The neural voices provide more natural and human-like speech.
                   </Typography>
                 </CardContent>
@@ -316,7 +328,7 @@ function Settings() {
                       Message Settings
                     </Typography>
                   </Box>
-                  
+
                   <TextField
                     fullWidth
                     multiline
@@ -346,8 +358,19 @@ function Settings() {
                     label="Chinese Greeting"
                     value={settings.greeting_chinese}
                     onChange={(e) => handleChange('greeting_chinese', e.target.value)}
-                    sx={{ mb: 3 }}
+                    sx={{ mb: 2 }}
                     helperText="Greeting message in Chinese"
+                  />
+
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    label="French Greeting"
+                    value={settings.greeting_french}
+                    onChange={(e) => handleChange('greeting_french', e.target.value)}
+                    sx={{ mb: 3 }}
+                    helperText="Greeting message in French"
                   />
 
                   <Typography variant="body2" color="textSecondary">

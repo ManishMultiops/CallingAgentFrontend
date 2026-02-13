@@ -30,7 +30,7 @@ import {
   Edit,
   Delete
 } from '@mui/icons-material';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 import { useAuth } from '../contexts/AuthContext';
 
 const Properties = () => {
@@ -73,9 +73,7 @@ const Properties = () => {
       setLoading(true);
       console.log('Fetching properties...');
       console.log('Auth token:', localStorage.getItem('access_token'));
-      console.log('Axios headers:', axios.defaults.headers.common);
-      
-      const response = await axios.get('http://localhost:8080/api/data/properties/');
+      const response = await apiClient.get('/data/properties/');
       const data = response.data.results || response.data;
       setProperties(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -98,10 +96,10 @@ const Properties = () => {
       };
 
       if (editingProperty) {
-        await axios.put(`http://localhost:8080/api/data/properties/${editingProperty.id}/`, propertyData);
+        await apiClient.put(`/data/properties/${editingProperty.id}/`, propertyData);
         setSuccess('Property updated successfully');
       } else {
-        await axios.post('http://localhost:8080/api/data/properties/', propertyData);
+        await apiClient.post('/data/properties/', propertyData);
         setSuccess('Property added successfully');
       }
       
@@ -121,7 +119,7 @@ const Properties = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:8080/api/data/properties/${propertyId}/`);
+      await apiClient.delete(`/data/properties/${propertyId}/`);
       setSuccess('Property deleted successfully');
       await fetchProperties();
     } catch (error) {

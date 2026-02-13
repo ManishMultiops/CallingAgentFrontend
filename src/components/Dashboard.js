@@ -44,7 +44,7 @@ import {
   People,
   Assessment
 } from '@mui/icons-material';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 
 // const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
@@ -62,7 +62,7 @@ function Dashboard() {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/calls/calls/analytics/');
+      const response = await apiClient.get('/calls/calls/analytics/');
       setAnalytics(response.data);
     } catch (error) {
       setError('Failed to fetch analytics data');
@@ -74,7 +74,7 @@ function Dashboard() {
 
   const fetchCallbackStats = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/data/leads/callback_stats/');
+      const response = await apiClient.get('/data/leads/callback_stats/');
       setCallbackStats(response.data);
     } catch (error) {
       console.error('Error fetching callback stats:', error);

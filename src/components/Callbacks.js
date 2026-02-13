@@ -36,8 +36,7 @@ import {
   MoreVert as MoreVertIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-
-const API_BASE_URL = 'http://localhost:8080/api';
+import apiClient from '../utils/axios';
 
 function Callbacks() {
   const [callbacks, setCallbacks] = useState([]);
@@ -53,19 +52,8 @@ function Callbacks() {
   const fetchCallbacks = useCallback(async () => {
     try {
       setLoading(true);
-      const token = getAuthToken();
-      const response = await fetch(`${API_BASE_URL}/data/leads/callbacks/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Unable to load callbacks data');
-      }
-
-      const data = await response.json();
+      const response = await apiClient.get('/data/leads/callbacks/');
+      const data = response.data;
       setCallbacks(data || []);
       setError(null);
     } catch (err) {
@@ -79,16 +67,9 @@ function Callbacks() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const token = getAuthToken();
-      const response = await fetch(`${API_BASE_URL}/data/leads/callback_stats/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
+      const response = await apiClient.get('/data/leads/callback_stats/');
+      if (response.status === 200) {
+        const data = response.data;
         setStats(data || {});
       } else {
         // If stats fail, set default empty stats
@@ -146,17 +127,17 @@ function Callbacks() {
   };
 
   const filteredCallbacks = callbacks.filter(callback => {
-    const matchesFilter = filter === 'all' || 
+    const matchesFilter = filter === 'all' ||
       (filter === 'due' && callback.is_due) ||
       (filter === 'overdue' && callback.is_overdue) ||
       (filter === 'pending' && callback.status === 'pending') ||
       (filter === 'completed' && callback.status === 'completed');
-    
-    const matchesSearch = !searchTerm || 
+
+    const matchesSearch = !searchTerm ||
       callback.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       callback.phone_number.includes(searchTerm) ||
       (callback.property && callback.property.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     return matchesFilter && matchesSearch;
   });
 
@@ -194,7 +175,7 @@ function Callbacks() {
             Refresh
           </Button>
         </Box>
-        
+
         <Alert severity="warning" action={
           <Button color="inherit" size="small" onClick={handleRefresh}>
             Retry
@@ -389,16 +370,16 @@ function Callbacks() {
             {error ? 'Unable to load callbacks' : 'No callbacks found'}
           </Typography>
           <Typography variant="body2" color="textSecondary">
-            {error 
+            {error
               ? 'Please check your connection and try refreshing the page'
-              : searchTerm || filter !== 'all' 
+              : searchTerm || filter !== 'all'
                 ? 'Try adjusting your search or filter criteria'
                 : 'No callbacks have been scheduled yet'
             }
           </Typography>
           {error && (
-            <Button 
-              variant="outlined" 
+            <Button
+              variant="outlined"
               onClick={handleRefresh}
               sx={{ mt: 2 }}
             >
@@ -451,7 +432,7 @@ function Callbacks() {
                 <Grid item xs={12} sm={6}>
                   <Typography variant="subtitle2" color="textSecondary">Time Until Callback</Typography>
                   <Typography variant="body1">
-                    {selectedCallback.time_until_callback 
+                    {selectedCallback.time_until_callback
                       ? formatTimeUntil(selectedCallback.time_until_callback)
                       : 'Due now'
                     }

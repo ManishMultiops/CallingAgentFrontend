@@ -38,7 +38,7 @@ import {
   MoreVert,
   Home
 } from '@mui/icons-material';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -108,7 +108,7 @@ function DataManagement() {
   const fetchLeads = async () => {
     try {
       setLeadsLoading(true);
-      const response = await axios.get('http://localhost:8080/api/data/leads/', {
+      const response = await apiClient.get('/data/leads/', {
         params: { status: statusTab }
       });
       const data = response.data.results || response.data;
@@ -126,7 +126,7 @@ function DataManagement() {
 
   const fetchProperties = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/data/properties/');
+      const response = await apiClient.get('/data/properties/');
       const data = response.data.results || response.data;
       setProperties(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -138,7 +138,7 @@ function DataManagement() {
   const fetchCsvUploads = async () => {
     try {
       setCsvLoading(true);
-      const response = await axios.get('http://localhost:8080/api/data/csv-uploads/');
+      const response = await apiClient.get('/data/csv-uploads/');
       const data = response.data.results || response.data;
       // Ensure data is always an array
       setCsvUploads(Array.isArray(data) ? data : []);
@@ -161,7 +161,7 @@ function DataManagement() {
     setSelectedIds([]);
     if (newValue === 'high_value') {
       // Fetch high-value leads
-      axios.get('http://localhost:8080/api/data-management/leads/high_value_leads/?min_score=50&limit=50')
+      apiClient.get('/data-management/leads/high_value_leads/?min_score=50&limit=50')
         .then(res => setLeads(res.data.leads || []))
         .catch(err => {
           setError('Failed to fetch high-value leads');
@@ -186,8 +186,8 @@ function DataManagement() {
           // ignore
         }
       }
-      
-      await axios.post('http://localhost:8080/api/data/leads/', leadData);
+
+      await apiClient.post('/data/leads/', leadData);
       setSuccess('Lead added successfully');
       setNewLead({ name: '', phone_number: '', property: '', status: 'pending', preferred_language: 'en', scheduled_call_at: '' });
       setOpenDialog(false);
@@ -210,8 +210,8 @@ function DataManagement() {
         property_id: propertyId  // Use property_id for API
       };
       delete updateData.property;  // Remove the property field since we're using property_id
-      
-      await axios.put(`http://localhost:8080/api/data/leads/${selectedLead.id}/`, updateData);
+
+      await apiClient.put(`/data/leads/${selectedLead.id}/`, updateData);
       setSuccess('Property assigned successfully');
       setOpenPropertyDialog(false);
       setSelectedLead(null);
@@ -272,7 +272,7 @@ function DataManagement() {
       } else {
         updateData.scheduled_call_at = null;
       }
-      await axios.put(`http://localhost:8080/api/data/leads/${editLead.id}/`, updateData);
+      await apiClient.put(`/data/leads/${editLead.id}/`, updateData);
       setSuccess('Lead updated successfully');
       setOpenEditDialog(false);
       setSelectedLead(null);
@@ -285,7 +285,7 @@ function DataManagement() {
 
   const handleDeleteLead = async () => {
     try {
-      await axios.delete(`http://localhost:8080/api/data/leads/${selectedLead.id}/`);
+      await apiClient.delete(`/data/leads/${selectedLead.id}/`);
       setSuccess('Lead deleted successfully');
       setSelectedLead(null);
       fetchLeads();
@@ -306,15 +306,15 @@ function DataManagement() {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:8080/api/data/csv-uploads/', formData, {
+      const response = await apiClient.post('/data/csv-uploads/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
+
       // Process the CSV
-      await axios.post(`http://localhost:8080/api/data/csv-uploads/${response.data.id}/process/`);
-      
+      await apiClient.post(`/data/csv-uploads/${response.data.id}/process/`);
+
       setSuccess('CSV uploaded and processed successfully');
       fetchCsvUploads();
       fetchLeads();
@@ -328,9 +328,8 @@ function DataManagement() {
 
   const handleDownloadSample = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/data/csv-uploads/sample/');
-      if (!response.ok) throw new Error('Failed to download sample CSV');
-      const blob = await response.blob();
+      const response = await apiClient.get('/data/csv-uploads/sample/', { responseType: 'blob' });
+      const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -371,7 +370,7 @@ function DataManagement() {
         };
       }
 
-      await axios.post('http://localhost:8080/api/calls/calls/initiate_call/', payload);
+      await apiClient.post('/calls/calls/initiate_call/', payload);
       setSuccess('Call initiated successfully');
     } catch (error) {
       setError('Failed to initiate call');
@@ -394,7 +393,7 @@ function DataManagement() {
   const bulkChangeStatus = async (newStatus) => {
     if (selectedIds.length === 0) return;
     try {
-      await axios.post('http://localhost:8080/api/data/leads/bulk_update_status/', {
+      await apiClient.post('/data/leads/bulk_update_status/', {
         ids: selectedIds,
         status: newStatus
       });
@@ -449,7 +448,7 @@ function DataManagement() {
             size="small"
             onClick={async () => {
               try {
-                const res = await axios.get('http://localhost:8080/api/data-management/leads/high_value_leads/?min_score=70&limit=20');
+                const res = await apiClient.get('/data-management/leads/high_value_leads/?min_score=70&limit=20');
                 setLeads(res.data.leads);
                 setStatusTab('high_value');
               } catch (err) {
@@ -518,94 +517,95 @@ function DataManagement() {
               </TableHead>
               <TableBody>
                 {Array.isArray(leads) && leads.length > 0 ? leads.map((lead) => (
-                <TableRow key={lead.id}>
-                  <TableCell padding="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(lead.id)}
-                      onChange={() => toggleSelectLead(lead.id)}
-                    />
-                  </TableCell>
-                  <TableCell>{lead.name}</TableCell>
-                  <TableCell>{lead.phone_number}</TableCell>
-                  <TableCell>
-                    <Box>
-                      <Chip
-                        label={`Score: ${lead.lead_score || 0}`}
-                        color={lead.lead_score >= 70 ? 'success' : lead.lead_score >= 50 ? 'warning' : 'default'}
-                        size="small"
-                        sx={{ mb: 0.5 }}
+                  <TableRow key={lead.id}>
+                    <TableCell padding="checkbox">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(lead.id)}
+                        onChange={() => toggleSelectLead(lead.id)}
                       />
-                      {lead.lead_warmth_score > 0 && (
-                        <Typography variant="caption" color="textSecondary" display="block">
-                          Warmth: {(lead.lead_warmth_score * 100).toFixed(0)}%
-                        </Typography>
-                      )}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    {lead.property ? (
+                    </TableCell>
+                    <TableCell>{lead.name}</TableCell>
+                    <TableCell>{lead.phone_number}</TableCell>
+                    <TableCell>
                       <Box>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          {lead.property.name}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {lead.property.location}
-                        </Typography>
+                        <Chip
+                          label={`Score: ${lead.lead_score || 0}`}
+                          color={lead.lead_score >= 70 ? 'success' : lead.lead_score >= 50 ? 'warning' : 'default'}
+                          size="small"
+                          sx={{ mb: 0.5 }}
+                        />
+                        {lead.lead_warmth_score > 0 && (
+                          <Typography variant="caption" color="textSecondary" display="block">
+                            Warmth: {(lead.lead_warmth_score * 100).toFixed(0)}%
+                          </Typography>
+                        )}
                       </Box>
-                    ) : (
-                      <Chip 
-                        label="No Property Assigned" 
-                        color="warning" 
-                        size="small" 
+                    </TableCell>
+                    <TableCell>
+                      {lead.property ? (
+                        <Box>
+                          <Typography variant="subtitle2" fontWeight="bold">
+                            {lead.property.name}
+                          </Typography>
+                          <Typography variant="caption" color="textSecondary">
+                            {lead.property.location}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Chip
+                          label="No Property Assigned"
+                          color="warning"
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={lead.status}
+                        color={getStatusColor(lead.status)}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={lead.preferred_language === 'en' ? 'English' :
+                          lead.preferred_language === 'hi' ? 'Hindi' :
+                            lead.preferred_language === 'zh' ? 'Chinese' :
+                              lead.preferred_language === 'fr' ? 'French' : 'English'}
+                        color="info"
+                        size="small"
                         variant="outlined"
                       />
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={lead.status}
-                      color={getStatusColor(lead.status)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={lead.preferred_language === 'en' ? 'English' : 
-                             lead.preferred_language === 'hi' ? 'Hindi' : 
-                             lead.preferred_language === 'zh' ? 'Chinese' : 'English'}
-                      color="info"
-                      size="small"
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>{new Date(lead.created_at).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      color="primary"
-                      onClick={() => initiateCall(lead.id)}
-                      disabled={lead.status === 'completed' || lead.status === 'converted'}
-                      title="Call"
-                    >
-                      <Phone />
-                    </IconButton>
-                    {!lead.property && (
-                      <IconButton 
-                        color="warning" 
-                        onClick={() => handleAssignProperty(lead)}
-                        title="Assign Property"
+                    </TableCell>
+                    <TableCell>{new Date(lead.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        color="primary"
+                        onClick={() => initiateCall(lead.id)}
+                        disabled={lead.status === 'completed' || lead.status === 'converted'}
+                        title="Call"
                       >
-                        <Home />
+                        <Phone />
                       </IconButton>
-                    )}
-                    <IconButton
-                      onClick={(e) => handleMenuOpen(e, lead)}
-                      title="More"
-                    >
-                      <MoreVert />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
+                      {!lead.property && (
+                        <IconButton
+                          color="warning"
+                          onClick={() => handleAssignProperty(lead)}
+                          title="Assign Property"
+                        >
+                          <Home />
+                        </IconButton>
+                      )}
+                      <IconButton
+                        onClick={(e) => handleMenuOpen(e, lead)}
+                        title="More"
+                      >
+                        <MoreVert />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
                 )) : (
                   <TableRow>
                     <TableCell colSpan={8} align="center">
@@ -657,30 +657,30 @@ function DataManagement() {
         ) : (
           <Grid container spacing={2}>
             {Array.isArray(csvUploads) && csvUploads.length > 0 ? csvUploads.map((upload) => (
-            <Grid item xs={12} md={6} key={upload.id}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {upload.file.split('/').pop()}
-                  </Typography>
-                  <Typography color="textSecondary" gutterBottom>
-                    Uploaded: {new Date(upload.uploaded_at).toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2">
-                    Total Records: {upload.total_records}
-                  </Typography>
-                  <Typography variant="body2">
-                    Processed: {upload.processed_records}
-                  </Typography>
-                  <Chip
-                    label={upload.processed ? 'Processed' : 'Pending'}
-                    color={upload.processed ? 'success' : 'warning'}
-                    size="small"
-                    sx={{ mt: 1 }}
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
+              <Grid item xs={12} md={6} key={upload.id}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {upload.file.split('/').pop()}
+                    </Typography>
+                    <Typography color="textSecondary" gutterBottom>
+                      Uploaded: {new Date(upload.uploaded_at).toLocaleString()}
+                    </Typography>
+                    <Typography variant="body2">
+                      Total Records: {upload.total_records}
+                    </Typography>
+                    <Typography variant="body2">
+                      Processed: {upload.processed_records}
+                    </Typography>
+                    <Chip
+                      label={upload.processed ? 'Processed' : 'Pending'}
+                      color={upload.processed ? 'success' : 'warning'}
+                      size="small"
+                      sx={{ mt: 1 }}
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
             )) : (
               <Grid item xs={12}>
                 <Card>
@@ -718,14 +718,14 @@ function DataManagement() {
               fullWidth
               label="Name"
               value={newLead.name}
-              onChange={(e) => setNewLead({...newLead, name: e.target.value})}
+              onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
               fullWidth
               label="Phone Number"
               value={newLead.phone_number}
-              onChange={(e) => setNewLead({...newLead, phone_number: e.target.value})}
+              onChange={(e) => setNewLead({ ...newLead, phone_number: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -734,7 +734,7 @@ function DataManagement() {
               label="Schedule Call At (optional)"
               InputLabelProps={{ shrink: true }}
               value={newLead.scheduled_call_at || ''}
-              onChange={(e) => setNewLead({...newLead, scheduled_call_at: e.target.value})}
+              onChange={(e) => setNewLead({ ...newLead, scheduled_call_at: e.target.value })}
               helperText="If set and approved, the call will be scheduled at this time"
               sx={{ mb: 2 }}
             />
@@ -743,7 +743,7 @@ function DataManagement() {
               <Select
                 value={newLead.property}
                 label="Property"
-                onChange={(e) => setNewLead({...newLead, property: e.target.value})}
+                onChange={(e) => setNewLead({ ...newLead, property: e.target.value })}
               >
                 {properties.map((property) => (
                   <MenuItem key={property.id} value={property.id}>
@@ -757,7 +757,7 @@ function DataManagement() {
               <Select
                 value={newLead.status}
                 label="Status"
-                onChange={(e) => setNewLead({...newLead, status: e.target.value})}
+                onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
               >
                 <MenuItem value="pending">Pending</MenuItem>
                 <MenuItem value="in_progress">In Progress</MenuItem>
@@ -771,11 +771,12 @@ function DataManagement() {
               <Select
                 value={newLead.preferred_language}
                 label="Preferred Language"
-                onChange={(e) => setNewLead({...newLead, preferred_language: e.target.value})}
+                onChange={(e) => setNewLead({ ...newLead, preferred_language: e.target.value })}
               >
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="hi">Hindi</MenuItem>
                 <MenuItem value="zh">Chinese</MenuItem>
+                <MenuItem value="fr">French</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -795,14 +796,14 @@ function DataManagement() {
               fullWidth
               label="Name"
               value={editLead.name}
-              onChange={(e) => setEditLead({...editLead, name: e.target.value})}
+              onChange={(e) => setEditLead({ ...editLead, name: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
               fullWidth
               label="Phone Number"
               value={editLead.phone_number}
-              onChange={(e) => setEditLead({...editLead, phone_number: e.target.value})}
+              onChange={(e) => setEditLead({ ...editLead, phone_number: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -811,7 +812,7 @@ function DataManagement() {
               label="Schedule Call At (optional)"
               InputLabelProps={{ shrink: true }}
               value={editLead.scheduled_call_at || ''}
-              onChange={(e) => setEditLead({...editLead, scheduled_call_at: e.target.value})}
+              onChange={(e) => setEditLead({ ...editLead, scheduled_call_at: e.target.value })}
               helperText="If set and approved, the call will be scheduled at this time"
               sx={{ mb: 2 }}
             />
@@ -820,7 +821,7 @@ function DataManagement() {
               <Select
                 value={editLead.property}
                 label="Property"
-                onChange={(e) => setEditLead({...editLead, property: e.target.value})}
+                onChange={(e) => setEditLead({ ...editLead, property: e.target.value })}
               >
                 {properties.map((property) => (
                   <MenuItem key={property.id} value={property.id}>
@@ -834,7 +835,7 @@ function DataManagement() {
               <Select
                 value={editLead.status}
                 label="Status"
-                onChange={(e) => setEditLead({...editLead, status: e.target.value})}
+                onChange={(e) => setEditLead({ ...editLead, status: e.target.value })}
               >
                 <MenuItem value="pending">Pending</MenuItem>
                 <MenuItem value="in_progress">In Progress</MenuItem>
@@ -848,11 +849,12 @@ function DataManagement() {
               <Select
                 value={editLead.preferred_language}
                 label="Preferred Language"
-                onChange={(e) => setEditLead({...editLead, preferred_language: e.target.value})}
+                onChange={(e) => setEditLead({ ...editLead, preferred_language: e.target.value })}
               >
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="hi">Hindi</MenuItem>
                 <MenuItem value="zh">Chinese</MenuItem>
+                <MenuItem value="fr">French</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -938,7 +940,7 @@ function DataManagement() {
                   fullWidth
                   onClick={async () => {
                     try {
-                      const res = await axios.get(`http://localhost:8080/api/data-management/leads/${selectedLead.id}/recommendations/`);
+                      const res = await apiClient.get(`/data-management/leads/${selectedLead.id}/recommendations/`);
                       alert(`Recommendations:\n${res.data.recommendations.map((r, i) => `${i + 1}. ${r.name} - Score: ${r.recommendation_score}`).join('\n')}`);
                     } catch (err) {
                       console.error('Error fetching recommendations:', err);
@@ -966,9 +968,9 @@ function DataManagement() {
           <Grid container spacing={2}>
             {properties.map((property) => (
               <Grid item xs={12} key={property.id}>
-                <Card 
-                  sx={{ 
-                    cursor: 'pointer', 
+                <Card
+                  sx={{
+                    cursor: 'pointer',
                     '&:hover': { backgroundColor: 'action.hover' },
                     border: '1px solid',
                     borderColor: 'divider'

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, IconButton } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
-import axios from 'axios';
+import apiClient from '../utils/axios';
 
 function Visits() {
   const [rows, setRows] = useState([]);
@@ -12,7 +12,7 @@ function Visits() {
     try {
       setLoading(true);
       setError('');
-      const res = await axios.get('http://localhost:8080/api/calls/visits/');
+      const res = await apiClient.get('/calls/visits/');
       const payload = res?.data;
       if (Array.isArray(payload)) {
         setRows(payload);
