@@ -18,28 +18,28 @@ import { useNavigate } from 'react-router-dom';
 import {
   // BarChart,
   // Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+  // XAxis,
+  // YAxis,
+  // CartesianGrid,
+  // Tooltip,
+  // Legend,
+  // ResponsiveContainer,
+  // PieChart,
+  // Pie,
+  // Cell,
   // LineChart,
   // Line,
-  Area,
-  AreaChart
+  // Area,
+  // AreaChart
 } from 'recharts';
 import {
   Phone,
-  PhoneCallback,
+  // PhoneCallback,
   TrendingUp,
   TrendingDown,
-  Schedule,
+  // Schedule,
   CheckCircle,
-  Cancel,
+  // Cancel,
   Timer,
   People,
   Assessment
@@ -50,14 +50,14 @@ import apiClient from '../utils/axios';
 
 function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
-  const [callbackStats, setCallbackStats] = useState(null);
+  // const [callbackStats, setCallbackStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchAnalytics();
-    fetchCallbackStats();
+    // fetchCallbackStats();
   }, []);
 
   const fetchAnalytics = async () => {
@@ -72,14 +72,14 @@ function Dashboard() {
     }
   };
 
-  const fetchCallbackStats = async () => {
-    try {
-      const response = await apiClient.get('/data/leads/callback_stats/');
-      setCallbackStats(response.data);
-    } catch (error) {
-      console.error('Error fetching callback stats:', error);
-    }
-  };
+  // const fetchCallbackStats = async () => {
+  //   try {
+  //     const response = await apiClient.get('/data/leads/callback_stats/');
+  //     setCallbackStats(response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching callback stats:', error);
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -93,13 +93,13 @@ function Dashboard() {
     return <Alert severity="error">{error}</Alert>;
   }
 
-  const callData = [
-    { name: 'Completed', value: analytics?.completed_calls || 0, color: '#00C49F' },
-    { name: 'Dropped', value: analytics?.dropped_calls || 0, color: '#FF8042' },
-    { name: 'Converted', value: analytics?.converted_calls || 0, color: '#0088FE' },
-  ];
+  // const callData = [
+  //   { name: 'Completed', value: analytics?.completed_calls || 0, color: '#00C49F' },
+  //   { name: 'Dropped', value: analytics?.dropped_calls || 0, color: '#FF8042' },
+  //   { name: 'Converted', value: analytics?.converted_calls || 0, color: '#0088FE' },
+  // ];
 
-  const dailyData = analytics?.daily_stats || [];
+  // const dailyData = analytics?.daily_stats || [];
   const conversionRate = analytics?.conversion_rate || 0;
   const avgDuration = analytics?.average_duration || 0;
 
@@ -136,21 +136,21 @@ function Dashboard() {
     </Card>
   );
 
-  const CallbackCard = ({ title, value, color, icon }) => (
-    <Card sx={{ height: '100%', border: `2px solid ${color}20` }}>
-      <CardContent sx={{ textAlign: 'center', py: 3 }}>
-        <Avatar sx={{ bgcolor: color, width: 48, height: 48, mx: 'auto', mb: 2 }}>
-          {icon}
-        </Avatar>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: color, mb: 1 }}>
-          {value}
-        </Typography>
-        <Typography variant="body2" color="textSecondary">
-          {title}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
+  // const CallbackCard = ({ title, value, color, icon }) => (
+  //   <Card sx={{ height: '100%', border: `2px solid ${color}20` }}>
+  //     <CardContent sx={{ textAlign: 'center', py: 3 }}>
+  //       <Avatar sx={{ bgcolor: color, width: 48, height: 48, mx: 'auto', mb: 2 }}>
+  //         {icon}
+  //       </Avatar>
+  //       <Typography variant="h4" sx={{ fontWeight: 'bold', color: color, mb: 1 }}>
+  //         {value}
+  //       </Typography>
+  //       <Typography variant="body2" color="textSecondary">
+  //         {title}
+  //       </Typography>
+  //     </CardContent>
+  //   </Card>
+  // );
 
   return (
     <Box sx={{ width: '100%', margin: 0, padding: 0 }}>
@@ -173,7 +173,7 @@ function Dashboard() {
               subtitle="All time calls made"
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={3.5} sx={{ px: 1, pb: 3 }}>
             <StatCard
               title="Completed Calls"
@@ -183,7 +183,7 @@ function Dashboard() {
               subtitle={`${Math.round(((analytics?.completed_calls || 0) / (analytics?.total_calls || 1)) * 100)}% success rate`}
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={3.5} sx={{ px: 1, pb: 3 }}>
             <StatCard
               title="Conversion Rate"
@@ -193,7 +193,7 @@ function Dashboard() {
               subtitle="Calls converted to leads"
             />
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={3.5} sx={{ pl: 1, pb: 3 }}>
             <StatCard
               title="Avg Duration"
@@ -206,124 +206,9 @@ function Dashboard() {
         </Grid>
       </Box>
 
-      {/* Row 3: Callback Management - Full width */}
-      <Box sx={{ px: 3, mb: 4 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: '#1976d2' }}>
-          Callback Management
-        </Typography>
-      </Box>
+      {/* Row 3 & 4: Callback Management & Stats - Hidden */}
 
-      {/* Row 4: Callback Stats - 5 tiles */}
-      {callbackStats && (
-        <Box sx={{ px: 3, mb: 4 }}>
-          <Grid container spacing={0} sx={{ width: '100%' }}>
-            <Grid item xs={12} sm={6} md={2.4} sx={{ pr: 1, pb: 3 }}>
-              <CallbackCard
-                title="Scheduled Callbacks"
-                value={callbackStats.total_scheduled || 0}
-                color="#1976d2"
-                icon={<Schedule />}
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={2.4} sx={{ px: 1, pb: 3 }}>
-              <CallbackCard
-                title="Due Now"
-                value={callbackStats.due_now || 0}
-                color="#FF9800"
-                icon={<PhoneCallback />}
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={2.4} sx={{ px: 1, pb: 3 }}>
-              <CallbackCard
-                title="Overdue"
-                value={callbackStats.overdue || 0}
-                color="#f44336"
-                icon={<Cancel />}
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={2.4} sx={{ px: 1, pb: 3 }}>
-              <CallbackCard
-                title="Upcoming Today"
-                value={callbackStats.upcoming_today || 0}
-                color="#2196f3"
-                icon={<Assessment />}
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={2.4} sx={{ pl: 1, pb: 3 }}>
-              <CallbackCard
-                title="Completed Today"
-                value={callbackStats.completed_today || 0}
-                color="#4caf50"
-                icon={<CheckCircle />}
-              />
-            </Grid>
-          </Grid>
-        </Box>
-      )}
-
-      {/* Row 5: Performance Analytics - Full width */}
-      <Box sx={{ px: 3, mb: 4 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: '#1976d2' }}>
-          Performance Analytics
-        </Typography>
-      </Box>
-
-      {/* Row 6: Charts - 2 half tiles */}
-      <Box sx={{ px: 3, mb: 4 }}>
-        <Grid container spacing={0} sx={{ width: '100%' }}>
-          {/* Call Status Distribution - Half tile */}
-          <Grid item xs={12} md={6} sx={{ pr: 1.5 }}>
-            <Paper sx={{ p: 3, height: '400px', borderRadius: 2, boxShadow: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1976d2' }}>
-                Call Status Distribution
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={callData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {callData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-
-          {/* Daily Call Activity - Half tile */}
-          <Grid item xs={12} md={6} sx={{ pl: 1.5 }}>
-            <Paper sx={{ p: 3, height: '400px', borderRadius: 2, boxShadow: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: '#1976d2' }}>
-                Daily Call Activity
-              </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={dailyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Area type="monotone" dataKey="total" stackId="1" stroke="#1976d2" fill="#1976d2" fillOpacity={0.6} name="Total Calls" />
-                  <Area type="monotone" dataKey="completed" stackId="2" stroke="#00C49F" fill="#00C49F" fillOpacity={0.6} name="Completed" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Box>
+      {/* Row 5 & 6: Performance Analytics & Charts - Hidden */}
 
       {/* Row 7: Key Performance Indicators - Full width */}
       <Box sx={{ px: 3, mb: 4 }}>
@@ -340,14 +225,14 @@ function Dashboard() {
                 <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                   Average Call Duration
                 </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={Math.min((avgDuration / 120) * 100, 100)} 
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min((avgDuration / 120) * 100, 100)}
                   sx={{ mt: 2, height: 8, borderRadius: 4 }}
                 />
               </Box>
             </Grid>
-            
+
             <Grid item xs={12} sm={4}>
               <Box textAlign="center" sx={{ p: 2 }}>
                 <Typography variant="h3" color="error" sx={{ fontWeight: 'bold' }}>
@@ -356,15 +241,15 @@ function Dashboard() {
                 <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                   Dropped Calls
                 </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={Math.min(((analytics?.dropped_calls || 0) / (analytics?.total_calls || 1)) * 100, 100)} 
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min(((analytics?.dropped_calls || 0) / (analytics?.total_calls || 1)) * 100, 100)}
                   color="error"
                   sx={{ mt: 2, height: 8, borderRadius: 4 }}
                 />
               </Box>
             </Grid>
-            
+
             <Grid item xs={12} sm={4}>
               <Box textAlign="center" sx={{ p: 2 }}>
                 <Typography variant="h3" color="success.main" sx={{ fontWeight: 'bold' }}>
@@ -373,9 +258,9 @@ function Dashboard() {
                 <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                   Conversion Rate
                 </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={conversionRate} 
+                <LinearProgress
+                  variant="determinate"
+                  value={conversionRate}
                   color="success"
                   sx={{ mt: 2, height: 8, borderRadius: 4 }}
                 />
@@ -397,32 +282,22 @@ function Dashboard() {
                 variant="contained"
                 fullWidth
                 startIcon={<Phone />}
-                onClick={() => navigate('/leads')}
+                onClick={() => navigate('/data')}
                 sx={{ py: 2, borderRadius: 2 }}
               >
                 View All Leads
               </Button>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Button
-                variant="contained"
-                fullWidth
-                startIcon={<PhoneCallback />}
-                onClick={() => navigate('/callbacks')}
-                sx={{ py: 2, borderRadius: 2 }}
-              >
-                Manage Callbacks
-              </Button>
-            </Grid>
+            {/* Manage Callbacks Action - Hidden */}
             <Grid item xs={12} sm={6} md={3}>
               <Button
                 variant="outlined"
                 fullWidth
                 startIcon={<Assessment />}
-                onClick={() => navigate('/calls')}
+                onClick={() => navigate('/demos')}
                 sx={{ py: 2, borderRadius: 2 }}
               >
-                Call History
+                Scheduled Demos
               </Button>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -430,7 +305,7 @@ function Dashboard() {
                 variant="outlined"
                 fullWidth
                 startIcon={<People />}
-                onClick={() => navigate('/leads')}
+                onClick={() => navigate('/data')}
                 sx={{ py: 2, borderRadius: 2 }}
               >
                 Add New Lead
@@ -440,31 +315,7 @@ function Dashboard() {
         </Paper>
       </Box>
 
-      {/* Row 9: Advanced Analytics Quick Access */}
-      <Box sx={{ px: 3, mt: 4 }}>
-        <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'white' }}>
-            📊 Advanced Analytics Available
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 2, color: 'white', opacity: 0.9 }}>
-            Explore sentiment analysis, call quality metrics, topic extraction, and conversion predictions
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => navigate('/analytics')}
-            sx={{ 
-              bgcolor: 'white',
-              color: '#667eea',
-              '&:hover': { bgcolor: '#f5f5f5' },
-              px: 4,
-              py: 1.5
-            }}
-          >
-            View Advanced Analytics
-          </Button>
-        </Paper>
-      </Box>
+      {/* Row 9: Advanced Analytics - Hidden */}
     </Box>
   );
 }

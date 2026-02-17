@@ -30,7 +30,7 @@ function TabPanel({ children, value, index, ...other }) {
 
 function Login() {
   const [tabValue, setTabValue] = useState(0);
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({
     username: '',
     email: '',
@@ -43,7 +43,7 @@ function Login() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
@@ -56,7 +56,7 @@ function Login() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     const result = await login(loginData);
     if (result.success) {
       navigate('/');
@@ -70,13 +70,13 @@ function Login() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     if (registerData.password !== registerData.password_confirm) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
-    
+
     const result = await register(registerData);
     if (result.success) {
       navigate('/');
@@ -103,7 +103,7 @@ function Login() {
               <Tab label="Register" />
             </Tabs>
           </Box>
-          
+
           <TabPanel value={tabValue} index={0}>
             <Typography component="h1" variant="h5" align="center">
               Sign In
@@ -114,13 +114,13 @@ function Login() {
                 margin="normal"
                 required
                 fullWidth
-                id="username"
-                label="Username"
-                name="username"
-                autoComplete="username"
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
                 autoFocus
-                value={loginData.username}
-                onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                value={loginData.email}
+                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
               />
               <TextField
                 margin="normal"
@@ -132,7 +132,7 @@ function Login() {
                 id="password"
                 autoComplete="current-password"
                 value={loginData.password}
-                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
               />
               <Button
                 type="submit"
@@ -145,7 +145,7 @@ function Login() {
               </Button>
             </Box>
           </TabPanel>
-          
+
           <TabPanel value={tabValue} index={1}>
             <Typography component="h1" variant="h5" align="center">
               Sign Up
@@ -163,7 +163,7 @@ function Login() {
                     label="First Name"
                     autoFocus
                     value={registerData.first_name}
-                    onChange={(e) => setRegisterData({...registerData, first_name: e.target.value})}
+                    onChange={(e) => setRegisterData({ ...registerData, first_name: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -175,7 +175,7 @@ function Login() {
                     name="last_name"
                     autoComplete="family-name"
                     value={registerData.last_name}
-                    onChange={(e) => setRegisterData({...registerData, last_name: e.target.value})}
+                    onChange={(e) => setRegisterData({ ...registerData, last_name: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -187,7 +187,7 @@ function Login() {
                     name="username"
                     autoComplete="username"
                     value={registerData.username}
-                    onChange={(e) => setRegisterData({...registerData, username: e.target.value})}
+                    onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -199,7 +199,7 @@ function Login() {
                     name="email"
                     autoComplete="email"
                     value={registerData.email}
-                    onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -211,7 +211,7 @@ function Login() {
                     name="phone_number"
                     autoComplete="tel"
                     value={registerData.phone_number}
-                    onChange={(e) => setRegisterData({...registerData, phone_number: e.target.value})}
+                    onChange={(e) => setRegisterData({ ...registerData, phone_number: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -222,7 +222,7 @@ function Login() {
                     label="Company Name"
                     name="company_name"
                     value={registerData.company_name}
-                    onChange={(e) => setRegisterData({...registerData, company_name: e.target.value})}
+                    onChange={(e) => setRegisterData({ ...registerData, company_name: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -235,7 +235,7 @@ function Login() {
                     id="password"
                     autoComplete="new-password"
                     value={registerData.password}
-                    onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                    onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -247,7 +247,7 @@ function Login() {
                     type="password"
                     id="password_confirm"
                     value={registerData.password_confirm}
-                    onChange={(e) => setRegisterData({...registerData, password_confirm: e.target.value})}
+                    onChange={(e) => setRegisterData({ ...registerData, password_confirm: e.target.value })}
                   />
                 </Grid>
               </Grid>

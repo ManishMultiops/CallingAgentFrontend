@@ -20,13 +20,14 @@ import {
   Menu as MenuIcon,
   Dashboard,
   DataUsage,
-  Home,
+  // Home,
   AccountCircle,
   Logout,
-  Schedule,
+  // Schedule,
   Settings,
   Event,
-  Analytics
+  // Analytics,
+  Inventory as ProductIcon
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -35,11 +36,11 @@ const drawerWidth = 240;
 
 const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/' },
-  { text: 'Properties', icon: <Home />, path: '/properties' },
+  { text: 'Products', icon: <ProductIcon />, path: '/products' },
   { text: 'Leads', icon: <DataUsage />, path: '/data' },
-  { text: 'Callbacks', icon: <Schedule />, path: '/callbacks' },
-  { text: 'Visits', icon: <Event />, path: '/visits' },
-  { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
+  // { text: 'Callbacks', icon: <Schedule />, path: '/callbacks' },
+  { text: 'Demos', icon: <Event />, path: '/demos' },
+  // { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
   { text: 'Settings', icon: <Settings />, path: '/settings' },
 ];
 
@@ -86,11 +87,11 @@ function Layout({ children }) {
             e.target.nextSibling.style.display = 'block';
           }}
         />
-        <Typography 
-          variant="h6" 
-          noWrap 
+        <Typography
+          variant="h6"
+          noWrap
           component="div"
-          sx={{ 
+          sx={{
             display: 'none',
             fontWeight: 'bold',
             color: 'primary.main'

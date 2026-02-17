@@ -5,11 +5,11 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import Properties from './components/Properties';
+import Products from './components/Products';
 import DataManagement from './components/DataManagement';
 import Callbacks from './components/Callbacks';
 import Settings from './components/Settings';
-import Visits from './components/Visits';
+import Demos from './components/Demos';
 import AdvancedAnalytics from './components/AdvancedAnalytics';
 import Layout from './components/Layout';
 
@@ -26,11 +26,11 @@ const theme = createTheme({
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return <div>Loading...</div>;
   }
-  
+
   return user ? children : <Navigate to="/login" />;
 }
 
@@ -49,10 +49,10 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             } />
-            <Route path="/properties" element={
+            <Route path="/products" element={
               <ProtectedRoute>
                 <Layout>
-                  <Properties />
+                  <Products />
                 </Layout>
               </ProtectedRoute>
             } />
@@ -70,10 +70,10 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             } />
-            <Route path="/visits" element={
+            <Route path="/demos" element={
               <ProtectedRoute>
                 <Layout>
-                  <Visits />
+                  <Demos />
                 </Layout>
               </ProtectedRoute>
             } />

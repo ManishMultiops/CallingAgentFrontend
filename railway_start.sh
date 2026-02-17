@@ -16,10 +16,7 @@ if [ ! -d "node_modules" ]; then
 fi
 
 # Build for production
-echo "🏗️ Building frontend..."
-npm run build
-
-# Serve with serve
+# Serve with serve package (installed in dependencies)
 PORT=${PORT:-3000}
 echo "🚀 Serving frontend on port $PORT..."
 npx serve -s build -l $PORT

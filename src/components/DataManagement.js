@@ -36,7 +36,8 @@ import {
   Download,
   Phone,
   MoreVert,
-  Home
+  Inventory as ProductIcon,
+  PlayArrow as PlayIcon
 } from '@mui/icons-material';
 import apiClient from '../utils/axios';
 
@@ -59,7 +60,7 @@ function DataManagement() {
   const [leads, setLeads] = useState([]);
   const [statusTab, setStatusTab] = useState('pending');
   const [selectedIds, setSelectedIds] = useState([]);
-  const [properties, setProperties] = useState([]);
+  const [products, setProducts] = useState([]);
   const [csvUploads, setCsvUploads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [leadsLoading, setLeadsLoading] = useState(true);
@@ -69,15 +70,17 @@ function DataManagement() {
   const [openDialog, setOpenDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openViewDialog, setOpenViewDialog] = useState(false);
-  const [openPropertyDialog, setOpenPropertyDialog] = useState(false);
+  const [openProductDialog, setOpenProductDialog] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [leadCalls, setLeadCalls] = useState([]);
+  const [leadCallsLoading, setLeadCallsLoading] = useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const isMenuOpen = Boolean(menuAnchorEl);
   // const [selectedFile, setSelectedFile] = useState(null);
   const [newLead, setNewLead] = useState({
     name: '',
     phone_number: '',
-    property: '',
+    product: '',
     status: 'pending',
     preferred_language: 'en'
   });
@@ -85,7 +88,7 @@ function DataManagement() {
     id: null,
     name: '',
     phone_number: '',
-    property: '',
+    product: '',
     status: 'pending',
     preferred_language: 'en',
     scheduled_call_at: ''
@@ -93,7 +96,7 @@ function DataManagement() {
 
   useEffect(() => {
     fetchLeads();
-    fetchProperties();
+    fetchProducts();
     fetchCsvUploads();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -124,14 +127,14 @@ function DataManagement() {
     }
   };
 
-  const fetchProperties = async () => {
+  const fetchProducts = async () => {
     try {
-      const response = await apiClient.get('/data/properties/');
+      const response = await apiClient.get('/data/products/');
       const data = response.data.results || response.data;
-      setProperties(Array.isArray(data) ? data : []);
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Error fetching properties:', error);
-      setProperties([]);
+      console.error('Error fetching products:', error);
+      setProducts([]);
     }
   };
 
@@ -174,9 +177,9 @@ function DataManagement() {
     try {
       const leadData = {
         ...newLead,
-        property_id: newLead.property || null  // Use property_id for API
+        product_id: newLead.product || null  // Use product_id for API
       };
-      delete leadData.property;  // Remove the property field since we're using property_id
+      delete leadData.product;  // Remove the product field since we're using product_id
       // Convert datetime-local to ISO if present
       if (leadData.scheduled_call_at) {
         try {
@@ -189,7 +192,7 @@ function DataManagement() {
 
       await apiClient.post('/data/leads/', leadData);
       setSuccess('Lead added successfully');
-      setNewLead({ name: '', phone_number: '', property: '', status: 'pending', preferred_language: 'en', scheduled_call_at: '' });
+      setNewLead({ name: '', phone_number: '', product: '', status: 'pending', preferred_language: 'en', scheduled_call_at: '' });
       setOpenDialog(false);
       fetchLeads();
     } catch (error) {
@@ -198,27 +201,27 @@ function DataManagement() {
     }
   };
 
-  const handleAssignProperty = (lead) => {
+  const handleAssignProduct = (lead) => {
     setSelectedLead(lead);
-    setOpenPropertyDialog(true);
+    setOpenProductDialog(true);
   };
 
-  const handlePropertyAssignment = async (propertyId) => {
+  const handleProductAssignment = async (productId) => {
     try {
       const updateData = {
         ...selectedLead,
-        property_id: propertyId  // Use property_id for API
+        product_id: productId  // Use product_id for API
       };
-      delete updateData.property;  // Remove the property field since we're using property_id
+      delete updateData.product;  // Remove the product field since we're using product_id
 
       await apiClient.put(`/data/leads/${selectedLead.id}/`, updateData);
-      setSuccess('Property assigned successfully');
-      setOpenPropertyDialog(false);
+      setSuccess('Product assigned successfully');
+      setOpenProductDialog(false);
       setSelectedLead(null);
       fetchLeads();
     } catch (error) {
-      setError('Failed to assign property');
-      console.error('Error assigning property:', error);
+      setError('Failed to assign product');
+      console.error('Error assigning product:', error);
     }
   };
 
@@ -231,9 +234,27 @@ function DataManagement() {
     setMenuAnchorEl(null);
   };
 
-  const handleViewLead = () => {
+  const handleViewLead = (lead) => {
+    setSelectedLead(lead);
     setOpenViewDialog(true);
+    fetchLeadCalls(lead.id);
     handleMenuClose();
+  };
+
+  const fetchLeadCalls = async (leadId) => {
+    try {
+      setLeadCallsLoading(true);
+      const response = await apiClient.get('/calls/calls/', {
+        params: { lead_id: leadId }
+      });
+      const data = response.data.results || response.data;
+      setLeadCalls(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching lead calls:', err);
+      setLeadCalls([]);
+    } finally {
+      setLeadCallsLoading(false);
+    }
   };
 
   const handleEditLeadOpen = () => {
@@ -242,7 +263,7 @@ function DataManagement() {
         id: selectedLead.id,
         name: selectedLead.name,
         phone_number: selectedLead.phone_number,
-        property: selectedLead.property ? selectedLead.property.id : '',
+        product: selectedLead.product ? selectedLead.product.id : '',
         status: selectedLead.status,
         preferred_language: selectedLead.preferred_language || 'en',
         scheduled_call_at: selectedLead.scheduled_call_at || ''
@@ -252,6 +273,21 @@ function DataManagement() {
     handleMenuClose();
   };
 
+  const parseTranscription = (transcription) => {
+    if (!transcription) return [];
+    const lines = transcription.split('\n');
+    return lines.map(line => {
+      const match = line.match(/^(AI|User \(OpenAI\)|User): (.*)$/);
+      if (match) {
+        return {
+          role: match[1] === 'AI' ? 'bot' : 'user',
+          text: match[2]
+        };
+      }
+      return { role: 'user', text: line }; // Fallback
+    }).filter(t => t.text.trim() !== '');
+  };
+
   const handleEditLeadSave = async () => {
     try {
       const updateData = {
@@ -259,7 +295,7 @@ function DataManagement() {
         phone_number: editLead.phone_number,
         status: editLead.status,
         preferred_language: editLead.preferred_language,
-        property_id: editLead.property || null
+        product_id: editLead.product || null
       };
       // Convert datetime-local to ISO if present
       if (editLead.scheduled_call_at) {
@@ -346,7 +382,7 @@ function DataManagement() {
 
   const initiateCall = async (leadId) => {
     try {
-      // Find the lead to get property details
+      // Find the lead to get product details
       const lead = leads.find(l => l.id === leadId);
       if (!lead) {
         setError('Lead not found');
@@ -357,16 +393,11 @@ function DataManagement() {
         lead_id: leadId
       };
 
-      // Include property details if available
-      if (lead.property) {
-        payload.property_context = {
-          name: lead.property.name,
-          location: lead.property.location,
-          price: lead.property.price,
-          area: lead.property.area,
-          property_type: lead.property.property_type,
-          description: lead.property.description,
-          amenities: lead.property.amenities
+      // Include product details if available
+      if (lead.product) {
+        payload.product_context = {
+          title: lead.product.title,
+          description: lead.product.description
         };
       }
 
@@ -438,28 +469,9 @@ function DataManagement() {
           <Tabs value={statusTab} onChange={handleStatusTabChange}>
             <Tab label="Pending" value="pending" />
             <Tab label="In Progress" value="in_progress" />
-            <Tab label="Completed" value="completed" />
             <Tab label="Rejected" value="rejected" />
             <Tab label="Converted" value="converted" />
-            <Tab label="High Value" value="high_value" />
           </Tabs>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={async () => {
-              try {
-                const res = await apiClient.get('/data-management/leads/high_value_leads/?min_score=70&limit=20');
-                setLeads(res.data.leads);
-                setStatusTab('high_value');
-              } catch (err) {
-                setError('Failed to fetch high-value leads');
-                console.error(err);
-              }
-            }}
-            sx={{ ml: 2 }}
-          >
-            View High-Value Leads
-          </Button>
           <FormControl size="small" sx={{ minWidth: 220 }} disabled={selectedIds.length === 0}>
             <InputLabel>Bulk Action</InputLabel>
             <Select
@@ -473,7 +485,6 @@ function DataManagement() {
             >
               <MenuItem value="pending">Set Pending</MenuItem>
               <MenuItem value="in_progress">Approve & Start</MenuItem>
-              <MenuItem value="completed">Set Completed</MenuItem>
               <MenuItem value="rejected" sx={{ color: 'error.main' }}>Set Rejected</MenuItem>
             </Select>
           </FormControl>
@@ -508,7 +519,7 @@ function DataManagement() {
                   <TableCell>Name</TableCell>
                   <TableCell>Phone Number</TableCell>
                   <TableCell>Lead Score</TableCell>
-                  <TableCell>Property</TableCell>
+                  <TableCell>Product</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Language</TableCell>
                   <TableCell>Created</TableCell>
@@ -543,18 +554,15 @@ function DataManagement() {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      {lead.property ? (
+                      {lead.product ? (
                         <Box>
                           <Typography variant="subtitle2" fontWeight="bold">
-                            {lead.property.name}
-                          </Typography>
-                          <Typography variant="caption" color="textSecondary">
-                            {lead.property.location}
+                            {lead.product.title}
                           </Typography>
                         </Box>
                       ) : (
                         <Chip
-                          label="No Property Assigned"
+                          label="No Product Assigned"
                           color="warning"
                           size="small"
                           variant="outlined"
@@ -589,13 +597,13 @@ function DataManagement() {
                       >
                         <Phone />
                       </IconButton>
-                      {!lead.property && (
+                      {!lead.product && (
                         <IconButton
                           color="warning"
-                          onClick={() => handleAssignProperty(lead)}
-                          title="Assign Property"
+                          onClick={() => handleAssignProduct(lead)}
+                          title="Assign Product"
                         >
-                          <Home />
+                          <ProductIcon />
                         </IconButton>
                       )}
                       <IconButton
@@ -704,7 +712,7 @@ function DataManagement() {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <MenuItem onClick={handleViewLead}>View</MenuItem>
+        <MenuItem onClick={() => handleViewLead(selectedLead)}>View</MenuItem>
         <MenuItem onClick={handleEditLeadOpen}>Edit</MenuItem>
         <MenuItem onClick={handleDeleteLead} sx={{ color: 'error.main' }}>Delete</MenuItem>
       </Menu>
@@ -739,15 +747,15 @@ function DataManagement() {
               sx={{ mb: 2 }}
             />
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Property</InputLabel>
+              <InputLabel>Product</InputLabel>
               <Select
-                value={newLead.property}
-                label="Property"
-                onChange={(e) => setNewLead({ ...newLead, property: e.target.value })}
+                value={newLead.product}
+                label="Product"
+                onChange={(e) => setNewLead({ ...newLead, product: e.target.value })}
               >
-                {properties.map((property) => (
-                  <MenuItem key={property.id} value={property.id}>
-                    {property.name} - {property.location}
+                {products.map((product) => (
+                  <MenuItem key={product.id} value={product.id}>
+                    {product.title}
                   </MenuItem>
                 ))}
               </Select>
@@ -817,15 +825,15 @@ function DataManagement() {
               sx={{ mb: 2 }}
             />
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Property</InputLabel>
+              <InputLabel>Product</InputLabel>
               <Select
-                value={editLead.property}
-                label="Property"
-                onChange={(e) => setEditLead({ ...editLead, property: e.target.value })}
+                value={editLead.product}
+                label="Product"
+                onChange={(e) => setEditLead({ ...editLead, product: e.target.value })}
               >
-                {properties.map((property) => (
-                  <MenuItem key={property.id} value={property.id}>
-                    {property.name} - {property.location}
+                {products.map((product) => (
+                  <MenuItem key={product.id} value={product.id}>
+                    {product.title}
                   </MenuItem>
                 ))}
               </Select>
@@ -865,109 +873,204 @@ function DataManagement() {
         </DialogActions>
       </Dialog>
 
-      {/* View Lead Dialog */}
-      <Dialog open={openViewDialog} onClose={() => setOpenViewDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Lead Details</DialogTitle>
-        <DialogContent>
+      {/* View Lead Dialog - Premium UI */}
+      <Dialog open={openViewDialog} onClose={() => setOpenViewDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', pb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" fontWeight="bold">Lead Details</Typography>
+            {selectedLead && (
+              <Chip
+                label={selectedLead.status.toUpperCase()}
+                color={getStatusColor(selectedLead.status)}
+                sx={{ fontWeight: 'bold' }}
+              />
+            )}
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
           {selectedLead && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">Name</Typography>
-                <Typography variant="body1">{selectedLead.name}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">Phone Number</Typography>
-                <Typography variant="body1">{selectedLead.phone_number}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">Property</Typography>
-                <Typography variant="body1">{selectedLead.property ? `${selectedLead.property.name} - ${selectedLead.property.location}` : 'Not assigned'}</Typography>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2">Status</Typography>
-                <Typography variant="body1">{selectedLead.status}</Typography>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2">Preferred Language</Typography>
-                <Typography variant="body1">{selectedLead.preferred_language}</Typography>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2">Lead Score</Typography>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Chip
-                    label={selectedLead.lead_score || 0}
-                    color={selectedLead.lead_score >= 70 ? 'success' : selectedLead.lead_score >= 50 ? 'warning' : 'default'}
-                    size="small"
-                  />
-                  {selectedLead.lead_warmth_score > 0 && (
-                    <Typography variant="caption" color="textSecondary">
-                      Warmth: {(selectedLead.lead_warmth_score * 100).toFixed(0)}%
+            <Box>
+              {/* Top Summary Cards - Using Flexbox for perfect distribution */}
+              <Box sx={{ display: 'flex', gap: 2, mb: 4, width: '100%' }}>
+                {[
+                  {
+                    label: 'Lead Score',
+                    value: selectedLead.lead_score || 0,
+                    sub: selectedLead.lead_score >= 70 ? 'Hot' : selectedLead.lead_score >= 40 ? 'Warm' : 'Cold',
+                    color: selectedLead.lead_score >= 70 ? 'success' : selectedLead.lead_score >= 40 ? 'warning' : 'default',
+                    bg: '#e0f2fe' // Light blue
+                  },
+                  {
+                    label: 'Engagement',
+                    value: `${(selectedLead.lead_warmth_score * 100).toFixed(0)}%`,
+                    sub: 'Warmth Score',
+                    bg: '#f0fdf4' // Light green
+                  },
+                  {
+                    label: 'Language',
+                    value: selectedLead.preferred_language === 'en' ? 'English' :
+                      selectedLead.preferred_language === 'hi' ? 'हिन्दी' :
+                        selectedLead.preferred_language === 'zh' ? '中文' :
+                          selectedLead.preferred_language === 'fr' ? 'Français' : 'English',
+                    bg: '#faf5ff' // Light purple
+                  }
+                ].map((item, idx) => (
+                  <Card
+                    key={idx}
+                    variant="outlined"
+                    sx={{
+                      bgcolor: item.bg,
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      minWidth: 0 // Prevents flex items from overflowing
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1, p: 2, '&:last-child': { pb: 2 } }}>
+                      <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', lineHeight: 1, mb: 1, display: 'block' }}>
+                        {item.label}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
+                        <Typography variant="h4" fontWeight="bold">
+                          {item.value}
+                        </Typography>
+                        {item.sub && (
+                          item.color ? (
+                            <Chip label={item.sub} size="small" color={item.color} sx={{ height: 20, fontSize: '0.65rem', fontWeight: 'bold' }} />
+                          ) : (
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 'medium' }}>{item.sub}</Typography>
+                          )
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))}
+              </Box>
+
+              {/* Personal Info Section */}
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Contact Information</Typography>
+              <Paper variant="outlined" sx={{ p: 2, mb: 4 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="caption" color="textSecondary">FULL NAME</Typography>
+                    <Typography variant="body1" fontWeight="medium">{selectedLead.name}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="caption" color="textSecondary">PHONE NUMBER</Typography>
+                    <Typography variant="body1" fontWeight="medium">{selectedLead.phone_number}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="caption" color="textSecondary">PRODUCT INTERESTED</Typography>
+                    <Typography variant="body1" fontWeight="bold" color="primary">
+                      {selectedLead.product ? selectedLead.product.title : 'Not Assigned'}
                     </Typography>
+                  </Grid>
+                  {selectedLead.preferred_budget_range && (
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="caption" color="textSecondary">BUDGET RANGE</Typography>
+                      <Typography variant="body1" fontWeight="medium">{selectedLead.preferred_budget_range}</Typography>
+                    </Grid>
                   )}
+                </Grid>
+              </Paper>
+
+              {/* Chat History Section */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, mt: 4 }}>
+                <Typography variant="h6" fontWeight="bold">Call Conversation History</Typography>
+                {!leadCallsLoading && leadCalls.find(c => c.recording_file || c.recording_url) && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    href={leadCalls.find(c => c.recording_file || c.recording_url).recording_file || leadCalls.find(c => c.recording_file || c.recording_url).recording_url}
+                    target="_blank"
+                    startIcon={<PlayIcon />}
+                    sx={{ borderRadius: 20, px: 2, textTransform: 'none', fontWeight: 'bold', boxShadow: 2 }}
+                  >
+                    Complete Call Recording
+                  </Button>
+                )}
+              </Box>
+              {leadCallsLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                  <CircularProgress />
                 </Box>
-              </Grid>
-              {selectedLead.preferred_budget_range && (
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Budget Range</Typography>
-                  <Typography variant="body1">{selectedLead.preferred_budget_range}</Typography>
-                </Grid>
+              ) : leadCalls.length > 0 ? (
+                <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2, maxHeight: '500px', overflowY: 'auto' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {leadCalls.map((call, callIdx) => (
+                      <Box key={call.id}>
+                        {/* Call Session Marker */}
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, my: 2 }}>
+                          <Chip
+                            label={`CALL ON ${new Date(call.started_at).toLocaleString()} - ${call.status.toUpperCase()}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ bgcolor: 'white', fontWeight: 'bold', fontSize: '0.65rem' }}
+                          />
+                        </Box>
+
+                        {call.transcription ? (
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {parseTranscription(call.transcription).map((msg, msgIdx) => (
+                              <Box
+                                key={`${call.id}-${msgIdx}`}
+                                sx={{
+                                  alignSelf: msg.role === 'bot' ? 'flex-start' : 'flex-end',
+                                  maxWidth: '85%',
+                                  p: 1.5,
+                                  borderRadius: 2,
+                                  bgcolor: msg.role === 'bot' ? 'white' : 'primary.main',
+                                  color: msg.role === 'bot' ? 'text.primary' : 'white',
+                                  boxShadow: 1,
+                                  position: 'relative',
+                                  border: msg.role === 'bot' ? '1px solid' : 'none',
+                                  borderColor: 'divider'
+                                }}
+                              >
+                                <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 0.5, opacity: 0.8 }}>
+                                  {msg.role === 'bot' ? '🤖 AI AGENT' : '👤 USER'}
+                                </Typography>
+                                <Typography variant="body2">{msg.text}</Typography>
+                              </Box>
+                            ))}
+                          </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                            <Typography variant="caption" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                              No transcription records for this session.
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                </Paper>
+              ) : (
+                <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover' }}>
+                  <Typography variant="body2" color="textSecondary">No calls have been recorded for this lead yet.</Typography>
+                </Paper>
               )}
-              {selectedLead.preferred_locations && selectedLead.preferred_locations.length > 0 && (
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Preferred Locations</Typography>
-                  <Typography variant="body1">{selectedLead.preferred_locations.join(', ')}</Typography>
-                </Grid>
-              )}
-              {selectedLead.optimal_call_time && (
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Optimal Call Time</Typography>
-                  <Typography variant="body1">{selectedLead.optimal_call_time}</Typography>
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">Created At</Typography>
-                <Typography variant="body1">{new Date(selectedLead.created_at).toLocaleString()}</Typography>
-              </Grid>
-              {selectedLead.notes && (
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2">Notes</Typography>
-                  <Typography variant="body1">{selectedLead.notes}</Typography>
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={async () => {
-                    try {
-                      const res = await apiClient.get(`/data-management/leads/${selectedLead.id}/recommendations/`);
-                      alert(`Recommendations:\n${res.data.recommendations.map((r, i) => `${i + 1}. ${r.name} - Score: ${r.recommendation_score}`).join('\n')}`);
-                    } catch (err) {
-                      console.error('Error fetching recommendations:', err);
-                    }
-                  }}
-                >
-                  View Property Recommendations
-                </Button>
-              </Grid>
-            </Grid>
+            </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenViewDialog(false)}>Close</Button>
+        <DialogActions sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Button onClick={() => setOpenViewDialog(false)} variant="contained" color="inherit">Close</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Property Assignment Dialog */}
-      <Dialog open={openPropertyDialog} onClose={() => setOpenPropertyDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Assign Property to {selectedLead?.name}</DialogTitle>
+      {/* Product Assignment Dialog */}
+      <Dialog open={openProductDialog} onClose={() => setOpenProductDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Assign Product to {selectedLead?.name}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Select a property to assign to this lead:
+            Select a product to assign to this lead:
           </Typography>
           <Grid container spacing={2}>
-            {properties.map((property) => (
-              <Grid item xs={12} key={property.id}>
+            {products.map((product) => (
+              <Grid item xs={12} key={product.id}>
                 <Card
                   sx={{
                     cursor: 'pointer',
@@ -975,20 +1078,14 @@ function DataManagement() {
                     border: '1px solid',
                     borderColor: 'divider'
                   }}
-                  onClick={() => handlePropertyAssignment(property.id)}
+                  onClick={() => handleProductAssignment(product.id)}
                 >
                   <CardContent>
                     <Typography variant="subtitle1" fontWeight="bold">
-                      {property.name}
+                      {product.title}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                      {property.location}
-                    </Typography>
-                    <Typography variant="body2" color="success.main" fontWeight="bold">
-                      ₹{property.price.toLocaleString()}
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      {property.area} • {property.property_type}
+                      {product.description}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -997,7 +1094,7 @@ function DataManagement() {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenPropertyDialog(false)}>Cancel</Button>
+          <Button onClick={() => setOpenProductDialog(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
     </Box>

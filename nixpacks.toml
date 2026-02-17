@@ -1,16 +1,11 @@
 [phases.setup]
-nixPkgs = ["nodejs-18_x"]
+nixPkgs = ["nodejs-20_x"]
 
 [phases.install]
-cmds = [
-    "npm install"
-]
+cmds = ["npm cache clean --force && npm install"]
 
 [phases.build]
-cmds = [
-    "npm run build"
-]
+cmds = ["CI=false npm run build"]
 
 [start]
 cmd = "bash railway_start.sh"
-

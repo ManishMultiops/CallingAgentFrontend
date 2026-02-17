@@ -1,0 +1,26 @@
+# Version Control
+.git
+.github
+
+# Environment Variables
+.env
+.env.*
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+build/
+dist/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS
+.DS_Store
+.vscode/
+.idea/

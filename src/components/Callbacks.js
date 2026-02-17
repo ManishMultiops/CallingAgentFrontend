@@ -35,7 +35,6 @@ import {
   Search as SearchIcon,
   MoreVert as MoreVertIcon
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
 import apiClient from '../utils/axios';
 
 function Callbacks() {
@@ -47,7 +46,6 @@ function Callbacks() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCallback, setSelectedCallback] = useState(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const { getAuthToken } = useAuth();
 
   const fetchCallbacks = useCallback(async () => {
     try {
@@ -63,7 +61,7 @@ function Callbacks() {
     } finally {
       setLoading(false);
     }
-  }, [getAuthToken]);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -92,7 +90,7 @@ function Callbacks() {
         completed_today: 0
       });
     }
-  }, [getAuthToken]);
+  }, []);
 
   useEffect(() => {
     fetchCallbacks();
@@ -136,7 +134,7 @@ function Callbacks() {
     const matchesSearch = !searchTerm ||
       callback.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       callback.phone_number.includes(searchTerm) ||
-      (callback.property && callback.property.toLowerCase().includes(searchTerm.toLowerCase()));
+      (callback.product && callback.product.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return matchesFilter && matchesSearch;
   });
@@ -300,7 +298,7 @@ function Callbacks() {
             <TableRow>
               <TableCell>Lead Name</TableCell>
               <TableCell>Phone</TableCell>
-              <TableCell>Property</TableCell>
+              <TableCell>Product</TableCell>
               <TableCell>Scheduled Time</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Time Until</TableCell>
@@ -313,12 +311,9 @@ function Callbacks() {
                 <TableCell>{callback.name}</TableCell>
                 <TableCell>{callback.phone_number}</TableCell>
                 <TableCell>
-                  {callback.property ? (
+                  {callback.product ? (
                     <Box>
-                      <Typography variant="body2">{callback.property}</Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        {callback.property_location}
-                      </Typography>
+                      <Typography variant="body2">{callback.product.title}</Typography>
                     </Box>
                   ) : (
                     'N/A'
@@ -405,15 +400,10 @@ function Callbacks() {
                   <Typography variant="body1">{selectedCallback.phone_number}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="subtitle2" color="textSecondary">Property</Typography>
+                  <Typography variant="subtitle2" color="textSecondary">Product</Typography>
                   <Typography variant="body1">
-                    {selectedCallback.property || 'N/A'}
+                    {selectedCallback.product ? selectedCallback.product.title : 'N/A'}
                   </Typography>
-                  {selectedCallback.property_location && (
-                    <Typography variant="caption" color="textSecondary">
-                      {selectedCallback.property_location}
-                    </Typography>
-                  )}
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="subtitle2" color="textSecondary">Status</Typography>
