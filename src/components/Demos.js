@@ -46,7 +46,7 @@ function Demos() {
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                     Scheduled Product Demos
                 </Typography>
                 <IconButton onClick={fetchDemos} disabled={loading} color="primary" title="Refresh">

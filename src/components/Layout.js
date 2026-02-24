@@ -27,10 +27,13 @@ import {
   Settings,
   Event,
   // Analytics,
-  Inventory as ProductIcon
+  Inventory as ProductIcon,
+  DarkMode,
+  LightMode
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useAppTheme } from '../contexts/ThemeContext';
 
 const drawerWidth = 240;
 
@@ -50,6 +53,7 @@ function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { mode, toggleTheme } = useAppTheme();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -70,51 +74,54 @@ function Layout({ children }) {
 
   const drawer = (
     <div>
-      <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2 }}>
-        <Box
-          component="img"
-          src="/logo.png"
-          alt="Calling Agent Logo"
-          sx={{
-            height: 60,
-            width: 'auto',
-            maxWidth: 180,
-            objectFit: 'contain'
-          }}
-          onError={(e) => {
-            // Fallback to text if logo fails to load
-            e.target.style.display = 'none';
-            e.target.nextSibling.style.display = 'block';
-          }}
-        />
+      <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2, py: 2 }}>
         <Typography
-          variant="h6"
-          noWrap
           component="div"
           sx={{
-            display: 'none',
             fontWeight: 'bold',
-            color: 'primary.main'
+            fontSize: '1.1rem',
+            color: 'primary.main',
+            textAlign: 'center',
+            lineHeight: 1.2
           }}
         >
-          Calling Agent
+          MultiOps CallGen AI
         </Typography>
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => navigate(item.path)}
-            >
-              <ListItemIcon>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {menuItems.map((item) => {
+          const isSelected = location.pathname === item.path;
+          return (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                selected={isSelected}
+                onClick={() => navigate(item.path)}
+                sx={{
+                  mx: 1,
+                  borderRadius: 2,
+                  mb: 0.5,
+                  ...(isSelected && {
+                    backgroundColor: mode === 'dark' ? 'rgba(74, 222, 128, 0.08)' : 'rgba(37, 99, 235, 0.08)',
+                    borderLeft: `4px solid ${mode === 'dark' ? '#4ade80' : '#2563eb'}`,
+                    '& .MuiListItemIcon-root, & .MuiListItemText-primary': {
+                      color: mode === 'dark' ? '#4ade80' : '#2563eb',
+                      fontWeight: 'bold'
+                    }
+                  }),
+                  '&:hover': {
+                    backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ color: isSelected ? (mode === 'dark' ? '#4ade80' : '#2563eb') : 'inherit' }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
     </div>
   );
@@ -126,6 +133,11 @@ function Layout({ children }) {
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
+          backgroundColor: mode === 'dark' ? 'rgba(39, 39, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: `1px solid ${mode === 'dark' ? '#3f3f46' : '#e2e8f0'}`,
+          boxShadow: 'none',
+          color: 'text.primary',
         }}
       >
         <Toolbar>
@@ -174,6 +186,32 @@ function Layout({ children }) {
               </ListItemIcon>
               Profile
             </MenuItem>
+
+            <MenuItem onClick={toggleTheme} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <ListItemIcon>
+                  {mode === 'dark' ? <DarkMode fontSize="small" /> : <LightMode fontSize="small" />}
+                </ListItemIcon>
+                Dark Mode
+              </Box>
+              <Box>
+                <input
+                  type="checkbox"
+                  checked={mode === 'dark'}
+                  readOnly
+                  style={{
+                    cursor: 'pointer',
+                    accentColor: '#4ade80',
+                    width: '16px',
+                    height: '16px',
+                    marginLeft: '12px'
+                  }}
+                />
+              </Box>
+            </MenuItem>
+
+            <Divider />
+
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <Logout fontSize="small" />
@@ -197,7 +235,12 @@ function Layout({ children }) {
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: 'background.paper',
+              borderRight: `1px solid ${mode === 'dark' ? '#3f3f46' : '#e2e8f0'}`,
+            },
           }}
         >
           {drawer}
@@ -206,7 +249,12 @@ function Layout({ children }) {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: 'background.paper',
+              borderRight: `1px solid ${mode === 'dark' ? '#3f3f46' : '#e2e8f0'}`,
+            },
           }}
           open
         >

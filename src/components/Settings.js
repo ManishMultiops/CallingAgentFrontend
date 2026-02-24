@@ -35,7 +35,11 @@ function Settings() {
     greeting_english: "Hello! I'm calling from our company. How can I help you today?",
     greeting_hindi: "नमस्ते! मैं हमारी कंपनी की तरफ से कॉल कर रहा हूं। आज मैं आपकी कैसे मदद कर सकता हूं?",
     greeting_chinese: "你好！我是从我们公司打来的电话。今天我能为您做些什么？",
-    greeting_french: "Bonjour! Je vous appelle de la part de notre entreprise. Comment puis-je vous aider aujourd'hui ?"
+    greeting_french: "Bonjour! Je vous appelle de la part de notre entreprise. Comment puis-je vous aider aujourd'hui ?",
+    voice_provider: 'openai',
+    openai_api_key: '',
+    deepgram_api_key: '',
+    sarvam_api_key: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -79,7 +83,11 @@ function Settings() {
         greeting_english: response.data.greeting_english,
         greeting_hindi: response.data.greeting_hindi,
         greeting_chinese: response.data.greeting_chinese,
-        greeting_french: response.data.greeting_french
+        greeting_french: response.data.greeting_french,
+        voice_provider: response.data.voice_provider || 'openai',
+        openai_api_key: response.data.openai_api_key || '',
+        deepgram_api_key: response.data.deepgram_api_key || '',
+        sarvam_api_key: response.data.sarvam_api_key || ''
       });
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -101,7 +109,11 @@ function Settings() {
         greeting_english: settings.greeting_english,
         greeting_hindi: settings.greeting_hindi,
         greeting_chinese: settings.greeting_chinese,
-        greeting_french: settings.greeting_french
+        greeting_french: settings.greeting_french,
+        voice_provider: settings.voice_provider,
+        openai_api_key: settings.openai_api_key,
+        deepgram_api_key: settings.deepgram_api_key,
+        sarvam_api_key: settings.sarvam_api_key
       });
       setSuccess('Settings saved successfully!');
     } catch (error) {
@@ -243,7 +255,7 @@ function Settings() {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2', mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
           <SettingsIcon sx={{ mr: 2, verticalAlign: 'middle' }} />
           Settings
         </Typography>
@@ -283,107 +295,175 @@ function Settings() {
             </Alert>
           )}
 
-          <Grid container spacing={3}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Voice Settings */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
-                    <VolumeUpIcon sx={{ mr: 2, color: '#1976d2' }} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      Voice Settings
-                    </Typography>
-                  </Box>
-
-                  <FormControl fullWidth sx={{ mb: 3 }}>
-                    <InputLabel>Bot Voice</InputLabel>
-                    <Select
-                      value={settings.bot_voice}
-                      label="Bot Voice"
-                      onChange={(e) => handleChange('bot_voice', e.target.value)}
-                    >
-                      {voiceOptions.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <Typography variant="body2" color="textSecondary">
-                    Choose the voice that will be used for all bot conversations.
-                    The neural voices provide more natural and human-like speech.
+            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
+                  <VolumeUpIcon sx={{ mr: 2, color: 'primary.main' }} />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Voice Settings
                   </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Box>
+
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <InputLabel>Bot Voice</InputLabel>
+                  <Select
+                    value={settings.bot_voice}
+                    label="Bot Voice"
+                    onChange={(e) => handleChange('bot_voice', e.target.value)}
+                  >
+                    {voiceOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 'auto' }}>
+                  Choose the voice that will be used for all bot conversations.
+                  The neural voices provide more natural and human-like speech.
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Voice Provider Settings */}
+            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
+                  <SettingsIcon sx={{ mr: 2, color: 'primary.main' }} />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Voice AI Stack
+                  </Typography>
+                </Box>
+
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <InputLabel id="voice-provider-label">Voice Provider</InputLabel>
+                  <Select
+                    labelId="voice-provider-label"
+                    value={settings.voice_provider}
+                    label="Voice Provider"
+                    onChange={(e) => handleChange('voice_provider', e.target.value)}
+                  >
+                    <MenuItem value="openai">OpenAI Realtime (Best Quality)</MenuItem>
+                    <MenuItem value="deepgram">Deepgram (Fast & Cost-Effective)</MenuItem>
+                    <MenuItem value="sarvam">Sarvam AI (Optimized for India)</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* OpenAI key is ALWAYS required as it serves as the LLM 'Brain' for all stacks */}
+                <TextField
+                  fullWidth
+                  label="OpenAI API Key"
+                  type="password"
+                  value={settings.openai_api_key}
+                  onChange={(e) => handleChange('openai_api_key', e.target.value)}
+                  sx={{ mb: 2 }}
+                  helperText={
+                    settings.voice_provider === 'openai'
+                      ? "Required for OpenAI Realtime Voice (ASR + LLM + TTS)"
+                      : "Required as the 'Brain' (LLM) for the conversation"
+                  }
+                />
+
+                {settings.voice_provider === 'deepgram' && (
+                  <TextField
+                    fullWidth
+                    label="Deepgram API Key"
+                    type="password"
+                    value={settings.deepgram_api_key}
+                    onChange={(e) => handleChange('deepgram_api_key', e.target.value)}
+                    sx={{ mb: 2 }}
+                    helperText="Required for Deepgram ASR/TTS (Voice processing)"
+                  />
+                )}
+
+                {settings.voice_provider === 'sarvam' && (
+                  <TextField
+                    fullWidth
+                    label="Sarvam API Key"
+                    type="password"
+                    value={settings.sarvam_api_key}
+                    onChange={(e) => handleChange('sarvam_api_key', e.target.value)}
+                    sx={{ mb: 2 }}
+                    helperText="Required for Sarvam AI Voice (Optimized for India)"
+                  />
+                )}
+
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 'auto' }}>
+                  Select your preferred AI provider. Each provider offers different quality, latency, and cost characteristics.
+                </Typography>
+              </CardContent>
+            </Card>
 
             {/* Message Settings */}
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
-                    <MessageIcon sx={{ mr: 2, color: '#1976d2' }} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                      Message Settings
-                    </Typography>
-                  </Box>
-
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    label="English Greeting"
-                    value={settings.greeting_english}
-                    onChange={(e) => handleChange('greeting_english', e.target.value)}
-                    sx={{ mb: 2 }}
-                    helperText="Greeting message in English"
-                  />
-
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    label="Hindi Greeting"
-                    value={settings.greeting_hindi}
-                    onChange={(e) => handleChange('greeting_hindi', e.target.value)}
-                    sx={{ mb: 2 }}
-                    helperText="Greeting message in Hindi"
-                  />
-
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    label="Chinese Greeting"
-                    value={settings.greeting_chinese}
-                    onChange={(e) => handleChange('greeting_chinese', e.target.value)}
-                    sx={{ mb: 2 }}
-                    helperText="Greeting message in Chinese"
-                  />
-
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    label="French Greeting"
-                    value={settings.greeting_french}
-                    onChange={(e) => handleChange('greeting_french', e.target.value)}
-                    sx={{ mb: 3 }}
-                    helperText="Greeting message in French"
-                  />
-
-                  <Typography variant="body2" color="textSecondary">
-                    Customize the greeting messages for each language. The system will automatically use the appropriate greeting based on the lead's preferred language.
+            <Card>
+              <CardContent>
+                <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
+                  <MessageIcon sx={{ mr: 2, color: 'primary.main' }} />
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Message Settings
                   </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Box>
 
-            {/* Voice Preview */}
-            <Grid item xs={12}>
-              <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1976d2' }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label="English Greeting"
+                      value={settings.greeting_english}
+                      onChange={(e) => handleChange('greeting_english', e.target.value)}
+                      helperText="Greeting message in English"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label="Hindi Greeting"
+                      value={settings.greeting_hindi}
+                      onChange={(e) => handleChange('greeting_hindi', e.target.value)}
+                      helperText="Greeting message in Hindi"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label="Chinese Greeting"
+                      value={settings.greeting_chinese}
+                      onChange={(e) => handleChange('greeting_chinese', e.target.value)}
+                      helperText="Greeting message in Chinese"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label="French Greeting"
+                      value={settings.greeting_french}
+                      onChange={(e) => handleChange('greeting_french', e.target.value)}
+                      helperText="Greeting message in French"
+                    />
+                  </Grid>
+                </Grid>
+
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 3 }}>
+                  Customize the greeting messages for each language. The system will automatically use the appropriate greeting based on the lead's preferred language.
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* Voice Preview & Save */}
+            <Card>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'primary.main' }}>
                   Voice Preview
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 2 }}>
@@ -399,25 +479,21 @@ function Settings() {
                 >
                   Play Preview
                 </Button>
-              </Paper>
-            </Grid>
-
-            {/* Save Button */}
-            <Grid item xs={12}>
-              <Box display="flex" justifyContent="flex-end">
+              </CardContent>
+              <Box display="flex" justifyContent="flex-end" sx={{ p: 2.5, borderTop: '1px solid #3f3f46', bgcolor: 'background.paper', borderRadius: '0 0 16px 16px' }}>
                 <Button
                   variant="contained"
                   size="large"
                   startIcon={<SaveIcon />}
                   onClick={handleSave}
                   disabled={saving}
-                  sx={{ px: 4, py: 1.5 }}
+                  sx={{ px: 4 }}
                 >
                   {saving ? 'Saving...' : 'Save Settings'}
                 </Button>
               </Box>
-            </Grid>
-          </Grid>
+            </Card>
+          </Box>
         </>
       )}
 

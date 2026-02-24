@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-//   Paper,
+  //   Paper,
   Typography,
   TextField,
   Button,
@@ -55,7 +55,7 @@ function TwilioSetup() {
     setSaving(true);
     setError('');
     setSuccess('');
-    
+
     // Validate required fields
     if (!settings.twilio_account_sid.trim()) {
       setError('Twilio Account SID is required');
@@ -77,7 +77,7 @@ function TwilioSetup() {
       setSaving(false);
       return;
     }
-    
+
     try {
       await apiClient.post('/calls/bot-settings/', settings);
       setSuccess('Twilio credentials saved successfully!');
@@ -108,7 +108,7 @@ function TwilioSetup() {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2', mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
           <PhoneIcon sx={{ mr: 2, verticalAlign: 'middle' }} />
           Twilio Setup
         </Typography>
@@ -129,103 +129,99 @@ function TwilioSetup() {
         </Alert>
       )}
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Twilio Credentials */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
-                <PhoneIcon sx={{ mr: 2, color: '#1976d2' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                  Twilio Credentials
-                </Typography>
-              </Box>
-              
-              <TextField
-                fullWidth
-                label="Twilio Account SID *"
-                value={settings.twilio_account_sid}
-                onChange={(e) => handleChange('twilio_account_sid', e.target.value)}
-                sx={{ mb: 2 }}
-                placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                helperText="Your Twilio Account SID from the Twilio Console"
-              />
-
-              <TextField
-                fullWidth
-                type="password"
-                label="Twilio Auth Token *"
-                value={settings.twilio_auth_token}
-                onChange={(e) => handleChange('twilio_auth_token', e.target.value)}
-                sx={{ mb: 2 }}
-                placeholder="Your Twilio Auth Token"
-                helperText="Your Twilio Auth Token from the Twilio Console"
-              />
-
-              <TextField
-                fullWidth
-                label="Twilio Phone Number *"
-                value={settings.twilio_phone_number}
-                onChange={(e) => handleChange('twilio_phone_number', e.target.value)}
-                sx={{ mb: 2 }}
-                placeholder="+1XXXXXXXXXX"
-                helperText="Your Twilio phone number in E.164 format"
-              />
-
-              <Typography variant="body2" color="textSecondary">
-                All Twilio credentials are required for making calls. You can find these in your Twilio Console dashboard.
+        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+            <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
+              <PhoneIcon sx={{ mr: 2, color: 'primary.main' }} />
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                Twilio Credentials
               </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Box>
+
+            <TextField
+              fullWidth
+              label="Twilio Account SID *"
+              value={settings.twilio_account_sid}
+              onChange={(e) => handleChange('twilio_account_sid', e.target.value)}
+              sx={{ mb: 2 }}
+              placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              helperText="Your Twilio Account SID from the Twilio Console"
+            />
+
+            <TextField
+              fullWidth
+              type="password"
+              label="Twilio Auth Token *"
+              value={settings.twilio_auth_token}
+              onChange={(e) => handleChange('twilio_auth_token', e.target.value)}
+              sx={{ mb: 2 }}
+              placeholder="Your Twilio Auth Token"
+              helperText="Your Twilio Auth Token from the Twilio Console"
+            />
+
+            <TextField
+              fullWidth
+              label="Twilio Phone Number *"
+              value={settings.twilio_phone_number}
+              onChange={(e) => handleChange('twilio_phone_number', e.target.value)}
+              sx={{ mb: 2 }}
+              placeholder="+1XXXXXXXXXX"
+              helperText="Your Twilio phone number in E.164 format"
+            />
+
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 'auto' }}>
+              All Twilio credentials are required for making calls. You can find these in your Twilio Console dashboard.
+            </Typography>
+          </CardContent>
+        </Card>
 
         {/* OpenAI Credentials */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
-                <SecurityIcon sx={{ mr: 2, color: '#1976d2' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                  OpenAI Credentials
-                </Typography>
-              </Box>
-              
-              <TextField
-                fullWidth
-                type="password"
-                label="OpenAI API Key *"
-                value={settings.openai_api_key}
-                onChange={(e) => handleChange('openai_api_key', e.target.value)}
-                sx={{ mb: 2 }}
-                placeholder="sk-..."
-                helperText="Your OpenAI API key for AI responses"
-              />
-
-              <Typography variant="body2" color="textSecondary">
-                OpenAI API key is required for generating intelligent responses during calls. 
-                You can get your API key from the OpenAI platform.
+        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+            <Box display="flex" alignItems="center" sx={{ mb: 3 }}>
+              <SecurityIcon sx={{ mr: 2, color: 'primary.main' }} />
+              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                OpenAI Credentials
               </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Box>
+
+            <TextField
+              fullWidth
+              type="password"
+              label="OpenAI API Key *"
+              value={settings.openai_api_key}
+              onChange={(e) => handleChange('openai_api_key', e.target.value)}
+              sx={{ mb: 2 }}
+              placeholder="sk-..."
+              helperText="Your OpenAI API key for AI responses"
+            />
+
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 'auto' }}>
+              OpenAI API key is required for generating intelligent responses during calls.
+              You can get your API key from the OpenAI platform.
+            </Typography>
+          </CardContent>
+        </Card>
 
         {/* Save Button */}
-        <Grid item xs={12}>
-          <Box display="flex" justifyContent="flex-end">
+        <Card>
+          <Box display="flex" justifyContent="flex-end" sx={{ p: 2.5, bgcolor: 'background.paper', borderRadius: '0 0 16px 16px' }}>
             <Button
               variant="contained"
               size="large"
               startIcon={<SaveIcon />}
               onClick={handleSave}
               disabled={saving}
-              sx={{ px: 4, py: 1.5 }}
+              sx={{ px: 4 }}
             >
               {saving ? 'Saving...' : 'Save Credentials'}
             </Button>
           </Box>
-        </Grid>
-      </Grid>
-    </Box>
+        </Card>
+      </Box >
+    </Box >
   );
 }
 

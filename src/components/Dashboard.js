@@ -104,7 +104,18 @@ function Dashboard() {
   const avgDuration = analytics?.average_duration || 0;
 
   const StatCard = ({ title, value, icon, color, subtitle, trend }) => (
-    <Card sx={{ height: '100%', background: `linear-gradient(135deg, ${color}15, ${color}05)` }}>
+    <Card sx={{
+      height: '100%',
+      width: '100%',
+      backgroundColor: 'background.paper',
+      border: `1px solid ${color}30`,
+      boxShadow: 'none',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: `0 8px 15px ${color}20`,
+      }
+    }}>
       <CardContent>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box>
@@ -156,25 +167,30 @@ function Dashboard() {
     <Box sx={{ width: '100%', margin: 0, padding: 0 }}>
       {/* Row 1: Dashboard Overview - Full width */}
       <Box sx={{ px: 3, mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2', mb: 2 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 2 }}>
           Dashboard Overview
         </Typography>
       </Box>
 
       {/* Row 2: Main Stats Cards - 4 tiles */}
       <Box sx={{ px: 3, mb: 4 }}>
-        <Grid container spacing={0} sx={{ width: '100%' }}>
-          <Grid item xs={12} sm={6} md={3.5} sx={{ pr: 1, pb: 3 }}>
+        <Box sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 3,
+          width: '100%'
+        }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <StatCard
               title="Total Calls"
               value={analytics?.total_calls || 0}
               icon={<Phone />}
-              color="#1976d2"
+              color="#4ade80" // Primary Green
               subtitle="All time calls made"
             />
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} sm={6} md={3.5} sx={{ px: 1, pb: 3 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <StatCard
               title="Completed Calls"
               value={analytics?.completed_calls || 0}
@@ -182,9 +198,9 @@ function Dashboard() {
               color="#00C49F"
               subtitle={`${Math.round(((analytics?.completed_calls || 0) / (analytics?.total_calls || 1)) * 100)}% success rate`}
             />
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} sm={6} md={3.5} sx={{ px: 1, pb: 3 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <StatCard
               title="Conversion Rate"
               value={`${conversionRate.toFixed(1)}%`}
@@ -192,9 +208,9 @@ function Dashboard() {
               color="#FFBB28"
               subtitle="Calls converted to leads"
             />
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} sm={6} md={3.5} sx={{ pl: 1, pb: 3 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <StatCard
               title="Avg Duration"
               value={`${Math.round(avgDuration)}s`}
@@ -202,8 +218,8 @@ function Dashboard() {
               color="#8884D8"
               subtitle="Average call length"
             />
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
 
       {/* Row 3 & 4: Callback Management & Stats - Hidden */}
@@ -212,8 +228,8 @@ function Dashboard() {
 
       {/* Row 7: Key Performance Indicators - Full width */}
       <Box sx={{ px: 3, mb: 4 }}>
-        <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: '#1976d2' }}>
+        <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 'none' }}>
+          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
             Key Performance Indicators
           </Typography>
           <Grid container spacing={3}>
@@ -273,7 +289,7 @@ function Dashboard() {
       {/* Row 8: Quick Actions - Full width */}
       <Box sx={{ px: 3 }}>
         <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: '#1976d2' }}>
+          <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3, color: 'primary.main' }}>
             ⚡ Quick Actions
           </Typography>
           <Grid container spacing={2}>

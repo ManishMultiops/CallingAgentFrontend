@@ -104,7 +104,7 @@ function AdvancedAnalytics() {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
           Advanced Analytics
         </Typography>
         <FormControl size="small" sx={{ minWidth: 150 }}>
@@ -126,7 +126,7 @@ function AdvancedAnalytics() {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Box display="flex" alignItems="center" mb={2}>
-              <SentimentSatisfied sx={{ color: '#1976d2', mr: 1 }} />
+              <SentimentSatisfied sx={{ color: 'primary.main', mr: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 Sentiment Analysis
               </Typography>
@@ -205,7 +205,7 @@ function AdvancedAnalytics() {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Box display="flex" alignItems="center" mb={2}>
-              <Star sx={{ color: '#1976d2', mr: 1 }} />
+              <Star sx={{ color: 'primary.main', mr: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 Call Quality Metrics
               </Typography>
@@ -213,7 +213,7 @@ function AdvancedAnalytics() {
             {qualityData && (
               <>
                 <Box mb={3}>
-                  <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#1976d2', mb: 1 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
                     {qualityData.average_quality_score?.toFixed(1) || 0}
                   </Typography>
                   <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -233,7 +233,7 @@ function AdvancedAnalytics() {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#1976d2" />
+                      <Bar dataKey="value" fill="#00E5FF" />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -246,7 +246,7 @@ function AdvancedAnalytics() {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Box display="flex" alignItems="center" mb={2}>
-              <TrendingUp sx={{ color: '#1976d2', mr: 1 }} />
+              <TrendingUp sx={{ color: 'primary.main', mr: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 Conversion Predictions
               </Typography>
@@ -254,7 +254,7 @@ function AdvancedAnalytics() {
             {conversionData && (
               <>
                 <Box mb={2}>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2', mb: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
                     {(conversionData.average_probability * 100).toFixed(1)}%
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
@@ -314,7 +314,7 @@ function AdvancedAnalytics() {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 3, height: '100%' }}>
             <Box display="flex" alignItems="center" mb={2}>
-              <Topic sx={{ color: '#1976d2', mr: 1 }} />
+              <Topic sx={{ color: 'primary.main', mr: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                 Top Topics
               </Typography>

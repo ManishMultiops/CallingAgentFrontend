@@ -87,17 +87,42 @@ function Login() {
   };
 
   return (
-    <Container component="main" maxWidth="sm">
+    <Container component="main" maxWidth="sm" sx={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      py: 8
+    }}>
       <Box
         sx={{
-          marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          animation: 'fadeIn 0.8s ease-out',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0, transform: 'translateY(10px)' },
+            '100%': { opacity: 1, transform: 'translateY(0)' },
+          },
         }}
       >
-        <Paper elevation={3} sx={{ width: '100%' }}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Box sx={{ mb: 4, textAlign: 'center' }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main', letterSpacing: '-0.02em', mb: 1 }}>
+            MultiOps CallGen AI
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            AI-Powered Communication Platform
+          </Typography>
+        </Box>
+        <Paper elevation={0} sx={{
+          width: '100%',
+          borderRadius: 3,
+          overflow: 'hidden',
+          p: 2,
+          border: '1px solid #3f3f46',
+          boxShadow: 'none'
+        }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="login tabs">
               <Tab label="Login" />
               <Tab label="Register" />
@@ -108,7 +133,7 @@ function Login() {
             <Typography component="h1" variant="h5" align="center">
               Sign In
             </Typography>
-            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mt: 2 }}>{typeof error === 'string' ? error : JSON.stringify(error)}</Alert>}
             <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
               <TextField
                 margin="normal"
@@ -150,7 +175,7 @@ function Login() {
             <Typography component="h1" variant="h5" align="center">
               Sign Up
             </Typography>
-            {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+            {error && <Alert severity="error" sx={{ mt: 2 }}>{typeof error === 'string' ? error : JSON.stringify(error)}</Alert>}
             <Box component="form" onSubmit={handleRegister} sx={{ mt: 1 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
